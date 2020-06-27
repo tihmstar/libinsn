@@ -6,9 +6,10 @@
 //  Copyright © 2018 tihmstar. All rights reserved.
 //
 
-#include <libinsn/insn.hpp>
-#include <libinsn/INSNexception.hpp>
 #include <libgeneral/macros.h>
+
+#include "insn.hpp"
+#include "INSNexception.hpp"
 
 #ifdef DEBUG
 #   include <stdint.h>

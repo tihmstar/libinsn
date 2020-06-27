@@ -6,10 +6,10 @@
 //  Copyright © 2020 tihmstar. All rights reserved.
 //
 
+#include <libgeneral/macros.h>
 
 #include "insn.hpp"
-#include <libinsn/INSNexception.hpp>
-#include <libgeneral/macros.h>
+#include "INSNexception.hpp"
 
 #ifdef DEBUG
 #   include <stdint.h>

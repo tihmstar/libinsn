@@ -27,9 +27,9 @@ case $host_os in
 esac
 
 
-CXXFLAGS+=" -std=c++11 -O3"
+CXXFLAGS+=" -std=c++14 -O3"
 CFLAGS+=" -std=c11"
-CXXFLAGS+=" -D EXPECTIONNAME=OFexception"
+CXXFLAGS+=" -D EXPECTIONNAME=INSNexception"
 
 # Checks for libraries.
 LIBGENERAL_REQUIRES_STR="libgeneral >= 26"
@@ -54,7 +54,7 @@ Configuration for $PACKAGE-$VERSION:
 -------------------------------------------
 
   install prefix ..........: $prefix
-
+"
 echo "  compiler ................: ${CC}
 
   Now type 'make' to build $PACKAGE-$VERSION,

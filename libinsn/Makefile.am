@@ -1,4 +1,4 @@
-AM_CFLAGS = -I$(top_srcdir)/include $(libgeneral_CFLAGS)
+AM_CFLAGS = -I$(top_srcdir)/include -I$(top_srcdir)/include/libinsn $(libgeneral_CFLAGS)
 AM_LDFLAGS = -L/usr/local/lib/ $(libgeneral_LIBS)
 
 lib_LTLIBRARIES = libinsn.la
@@ -9,5 +9,3 @@ libinsn_la_SOURCES = 	insn_decode.cpp \
 											insn_encode.cpp \
 											vsegment.cpp \
 											vmem.cpp
-
-											

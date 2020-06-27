@@ -6,11 +6,12 @@
 //  Copyright © 2019 tihmstar. All rights reserved.
 //
 
-#include "vmem.hpp"
-#include "INSNexception.hpp"
 #include <libgeneral/macros.h>
 #include <string.h>
 #include <algorithm>
+
+#include "vmem.hpp"
+#include "INSNexception.hpp"
 
 using namespace tihmstar::libinsn;
 
