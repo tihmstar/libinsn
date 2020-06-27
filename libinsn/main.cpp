@@ -13,7 +13,7 @@ using namespace tihmstar::libinsn;
 
 int main(int argc, const char * argv[]) {
 
-    uint64_t opcode = 0xa9057bfd;
+    uint64_t opcode = 0xd503237f; //pacibsp
     
     insn test(opcode,0x4000);
     

@@ -209,7 +209,7 @@ constexpr enum insn::type is_bcond(uint32_t i){
 }
 
 constexpr enum insn::type is_nop(uint32_t i){
-    return ((BIT_RANGE(i, 12, 31) == 0b11010101000000110010) && BIT_RANGE(i,0,4) == 0b11111) ? insn::nop : insn::unknown;
+    return (i == 0b11010101000000110010000000011111) ? insn::nop : insn::unknown;
 }
 
 constexpr enum insn::type is_and(uint32_t i){
@@ -231,6 +231,19 @@ constexpr enum insn::type is_ccmp(uint32_t i){
 constexpr enum insn::type is_madd(uint32_t i){
     return ((BIT_RANGE(i, 21, 30) == 0b0011011000) && (BIT_AT(i, 15) == 0)) ? insn::madd : insn::unknown;
 }
+
+constexpr enum insn::type is_pacib_int(uint32_t i){
+    return (BIT_RANGE(i, 10, 31) == 0b1101101011000001000001 /*pacib*/) ? insn::pacib : insn::unknown;
+}
+
+constexpr enum insn::type is_pacizb_int(uint32_t i){
+    return (BIT_RANGE(i, 10, 31) == 0b1101101011000001000001 /*pacizb*/) ? insn::pacizb : insn::unknown;
+}
+
+constexpr enum insn::type is_pacibsp(uint32_t i){
+    return (i == 0b11010101000000110010001101111111) ? insn::pacibsp : insn::unknown;
+}
+
 
 #pragma mark decoding unit (special decoders)
 
@@ -318,6 +331,7 @@ constexpr const insn_type_test_func special_decoders_0b01010100[] = {
 constexpr const insn_type_test_func special_decoders_0b11010101[] = {
     is_nop,
     is_mrs,
+    is_pacibsp,
     NULL
 };
 
@@ -358,6 +372,12 @@ constexpr const insn_type_test_func special_decoders_0b00011011[] = {
 
 constexpr const insn_type_test_func special_decoders_0b10011011[] = {
     is_madd,
+    NULL
+};
+
+constexpr const insn_type_test_func special_decoders_0b11011010[] = {
+    is_pacib_int,
+    is_pacizb_int,
     NULL
 };
 
@@ -418,6 +438,7 @@ struct decoder_stage1{
         _stage1_insn[0b11111010] = {false, .next_stage_decoder = special_decoders_0b11111010};
         _stage1_insn[0b00011011] = {false, .next_stage_decoder = special_decoders_0b00011011};
         _stage1_insn[0b10011011] = {false, .next_stage_decoder = special_decoders_0b10011011};
+        _stage1_insn[0b11011010] = {false, .next_stage_decoder = special_decoders_0b11011010};
 
     };
     constexpr decoder_val operator[](uint8_t i) const{
@@ -647,6 +668,8 @@ uint8_t insn::rd(){
         case movz:
         case mov:
         case csel:
+        case pacib:
+        case pacizb:
             return (_opcode % (1<<5));
 
         default:
@@ -677,6 +700,8 @@ uint8_t insn::rn(){
         case csel:
         case mov:
         case ccmp:
+        case pacib:
+        case pacizb:
             return BIT_RANGE(_opcode, 5, 9);
 
         default:

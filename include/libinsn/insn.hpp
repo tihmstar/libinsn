@@ -52,7 +52,10 @@ namespace tihmstar{
                 subs,
                 cmp = subs,
                 ccmp,
-                madd
+                madd,
+                pacib,
+                pacizb,
+                pacibsp
             };
             enum subtype{
                 st_general,
