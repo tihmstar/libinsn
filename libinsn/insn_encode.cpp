@@ -13,13 +13,13 @@
 
 #ifdef DEBUG
 #   include <stdint.h>
-static constexpr uint64_t BIT_RANGE(uint64_t v, int begin, int end) { return ((v)>>(begin)) % (1 << ((end)-(begin)+1)); }
-static constexpr uint64_t BIT_AT(uint64_t v, int pos){ return (v >> pos) % 2; }
-static constexpr uint64_t SET_BITS(uint64_t v, int begin) { return ((v)<<(begin));}
+static constexpr uint64_t BIT_RANGE(uint64_t v, int begin, int end) { return ((v)>>(begin)) % (1UL << ((end)-(begin)+1)); }
+static constexpr uint64_t BIT_AT(uint64_t v, int pos){ return (v >> pos) & 1; }
+static constexpr uint64_t SET_BITS(uint64_t v, int begin) { return (((uint64_t)v)<<(begin));}
 #else
-#   define BIT_RANGE(v,begin,end) ( ((v)>>(begin)) % (1 << ((end)-(begin)+1)) )
-#   define BIT_AT(v,pos) ( (v >> pos) % 2 )
-#   define SET_BITS(v, begin) (((v)<<(begin)))
+#   define BIT_RANGE(v,begin,end) ( ((v)>>(begin)) % (1UL << ((end)-(begin)+1)) )
+#   define BIT_AT(v,pos) ( (v >> pos) & 1 )
+#   define SET_BITS(v, begin) ((((uint64_t)v)<<(begin)))
 #endif
 
 using namespace tihmstar::libinsn;
@@ -71,7 +71,7 @@ insn insn::new_immediate_b(loc_t pc, int64_t imm){
     ret._opcode |= SET_BITS(0b000101, 26);
     imm -= pc;
     imm >>=2;
-    ret._opcode |= imm & ((1<<27)-1);
+    ret._opcode |= imm & ((1UL<<27)-1);
     
     return ret;
 }
@@ -92,7 +92,7 @@ insn insn::new_immediate_movk(loc_t pc, int64_t imm, uint8_t rd, uint8_t rm){
 
     ret._opcode |= SET_BITS(0b11100101, 23) | SET_BITS(1, 31);//64bit val (x regs, not w regs)
     ret._opcode |= (rd % (1<<5));
-    ret._opcode |= SET_BITS(imm & ((1<<16)-1), 5);
+    ret._opcode |= SET_BITS(imm & ((1UL<<16)-1), 5);
     ret._opcode |= SET_BITS(rm & 0b11, 21); //set shift here
     
     return ret;
