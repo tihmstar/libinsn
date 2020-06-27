@@ -401,8 +401,6 @@ struct decoder_stage1{
         for (int i=0; i<4; i++) _stage1_insn[0b10010100 | SET_BITS(i,0)] = {true, insn::bl};
         for (int i=0; i<2; i++) _stage1_insn[0b00110100 | SET_BITS(i,7)] = {true, insn::cbz};
         for (int i=0; i<2; i++) _stage1_insn[0b00110111 | SET_BITS(i,7)] = {true, insn::tbnz};
-        for (int i=0; i<8; i++) _stage1_insn[0b00010001 | SET_BITS(i,5)] = {true, insn::add};
-        for (int i=0; i<8; i++) _stage1_insn[0b00001011 | SET_BITS(i,5)] = {true, insn::sub};
         for (int i=0; i<2; i++) _stage1_insn[0b10111000 | SET_BITS(i,6)] = {true, insn::ldr};
         for (int i=0; i<2; i++) _stage1_insn[0b00110101 | SET_BITS(i,7)] = {true, insn::cbnz};
         for (int i=0; i<2; i++) _stage1_insn[0b00110110 | SET_BITS(i,7)] = {true, insn::tbz};
@@ -410,7 +408,11 @@ struct decoder_stage1{
         for (int i=0; i<2; i++) _stage1_insn[0b00101010 | SET_BITS(i,7)] = {true, insn::mov};
         for (int i=0; i<2; i++) _stage1_insn[0b01110001 | SET_BITS(i,7)] = {true, insn::subs};
 
-            
+        for (int i=0; i<2; i++) _stage1_insn[0b00010001 | SET_BITS(i,7)] = {true, insn::add}; //imediate
+        for (int i=0; i<2; i++) _stage1_insn[0b00001011 | SET_BITS(i,7)] = {true, insn::add}; //register
+        for (int i=0; i<2; i++) _stage1_insn[0b01010001 | SET_BITS(i,7)] = {true, insn::sub}; //imediate
+        for (int i=0; i<2; i++) _stage1_insn[0b01001011 | SET_BITS(i,7)] = {true, insn::sub}; //register
+
 
         for (int i=0; i<4; i++) _stage1_insn[0b00101000 | SET_BITS(i & 1,7) | SET_BITS(i >> 1,0)] = {false, .next_stage_decoder = special_decoders_stp_ldp};
 
