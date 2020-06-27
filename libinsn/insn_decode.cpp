@@ -392,7 +392,7 @@ struct decoder_stage1{
 
             
 
-        for (int i=0; i<4; i++) _stage1_insn[0b00101000 | SET_BITS(i & 1,7) | SET_BITS(i >> 1,0)] = {true, .next_stage_decoder = special_decoders_stp_ldp};
+        for (int i=0; i<4; i++) _stage1_insn[0b00101000 | SET_BITS(i & 1,7) | SET_BITS(i >> 1,0)] = {false, .next_stage_decoder = special_decoders_stp_ldp};
 
             
         _stage1_insn[0b11010110] = {false, .next_stage_decoder = special_decoders_0b11010110};
