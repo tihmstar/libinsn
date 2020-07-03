@@ -24,18 +24,42 @@ static constexpr uint64_t SET_BITS(uint64_t v, int begin) { return (((uint64_t)v
 
 using namespace tihmstar::libinsn;
 
-insn insn::new_general_adr(loc_t pc, int64_t imm, uint8_t rd){
+insn insn::new_general_adr(loc_t pc, uint64_t imm, uint8_t rd){
     insn ret(0,pc);
     
     ret._opcode |= SET_BITS(0b10000, 24);
     ret._opcode |= (rd % (1<<5));
-    int64_t diff = imm - ret.imm();
-#warning TODO is this distance validation correct??
-    if (diff > 0) {
-        assure(diff < (1LL<<19));
+    
+    if (imm > pc) {
+        retassure(imm-pc < (1UL<<20), "immediate difference needs to be smaller than (1<<20)");
     }else{
-        assure(-diff < (1LL<<19));
+        retassure(pc-imm < (1UL<<20), "immediate difference needs to be smaller than (1<<20)");
     }
+    
+    uint64_t diff = pc - imm;
+    ret._opcode |= SET_BITS(BIT_RANGE(diff,0,1), 29);
+    ret._opcode |= SET_BITS(BIT_RANGE(diff,2,19), 5);
+    
+    return ret;
+}
+
+insn insn::new_general_adrp(loc_t pc, uint64_t imm, uint8_t rd){
+    insn ret(0,pc);
+    
+    retassure((imm & 0xfff) == 0, "immediate needs to be 0xfff byte aligned!");
+    
+    ret._opcode |= SET_BITS(0b10010000, 24);
+    ret._opcode |= (rd % (1<<5));
+    
+    if (imm > pc) {
+        retassure(imm-pc < (1UL<<32), "immediate difference needs to be smaller than (1<<32)");
+    }else{
+        retassure(pc-imm < (1UL<<32), "immediate difference needs to be smaller than (1<<32)");
+    }
+    
+    uint64_t diff = pc - imm;
+    diff >>= 12;
+    
     ret._opcode |= SET_BITS(BIT_RANGE(diff,0,1), 29);
     ret._opcode |= SET_BITS(BIT_RANGE(diff,2,19), 5);
     
@@ -65,13 +89,19 @@ insn insn::new_immediate_bl(loc_t pc, int64_t imm){
     return ret;
 }
 
-insn insn::new_immediate_b(loc_t pc, int64_t imm){
+insn insn::new_immediate_b(loc_t pc, uint64_t imm){
     insn ret(0,pc);
-    
+    retassure((imm & 0b11) == 0, "immediate needs to be 4 byte aligned!");
+
     ret._opcode |= SET_BITS(0b000101, 26);
+    if (imm > pc) {
+        retassure(imm-pc < (1UL<<25), "immediate difference needs to be smaller than (1<<25)");
+    }else{
+        retassure(pc-imm < (1UL<<25), "immediate difference needs to be smaller than (1<<25)");
+    }
     imm -= pc;
     imm >>=2;
-    ret._opcode |= imm & ((1UL<<27)-1);
+    ret._opcode |= imm & ((1UL<<26)-1);
     
     return ret;
 }
