@@ -66,6 +66,16 @@ insn insn::new_general_adrp(loc_t pc, uint64_t imm, uint8_t rd){
     return ret;
 }
 
+insn insn::new_general_br(loc_t pc, uint8_t rn){
+    insn ret(0,pc);
+    
+    ret._opcode |= SET_BITS(0b1101011000011111000000, 10);
+    ret._opcode |= SET_BITS(rn & 0b11111, 5);
+
+    return ret;
+}
+
+
 insn insn::new_register_mov(loc_t pc, int64_t imm, uint8_t rd, uint8_t rn, uint8_t rm){
     insn ret(0,pc);
     

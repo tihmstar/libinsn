@@ -122,6 +122,7 @@ namespace tihmstar{
         public: //constructor functions
             static insn new_general_adr(loc_t pc, uint64_t imm, uint8_t rd);
             static insn new_general_adrp(loc_t pc, uint64_t imm, uint8_t rd);
+            static insn new_general_br(loc_t pc, uint8_t rn);
 
             static insn new_register_mov(loc_t pc, int64_t imm, uint8_t rd, uint8_t rn, uint8_t rm);
             static insn new_register_ccmp(loc_t pc, cond condition, uint8_t flags, uint8_t rn, uint8_t rm);
