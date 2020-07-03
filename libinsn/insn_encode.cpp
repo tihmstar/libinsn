@@ -122,7 +122,7 @@ insn insn::new_immediate_add(loc_t pc, uint64_t imm, uint8_t rn, uint8_t rd){
     
     ret._opcode |= SET_BITS(0b0010001, 24);
     ret._opcode |= SET_BITS(shift, 22);
-    ret._opcode |= SET_BITS(imm, 10);
+    ret._opcode |= SET_BITS(imm & ((1UL<<12)-1), 10);
     ret._opcode |= SET_BITS(rn & 0b11111, 5);
     ret._opcode |= SET_BITS(rd & 0b11111, 0);
 
@@ -188,8 +188,8 @@ insn insn::new_immediate_ldr(loc_t pc, int64_t imm, uint8_t rn, uint8_t rt){
     imm <<= 10;
     ret._opcode |= imm;
     
-    ret._opcode |= SET_BITS(rn % (1<< 4), 5);
-    ret._opcode |= SET_BITS(rt % (1<< 4), 0);
+    ret._opcode |= SET_BITS(rn & 0b11111, 5);
+    ret._opcode |= SET_BITS(rt & 0b11111, 0);
 
     return ret;
 }
@@ -200,10 +200,15 @@ insn insn::new_immediate_ldr(loc_t pc, int64_t imm, uint8_t rn, uint8_t rt){
 insn insn::new_literal_ldr(loc_t pc, uint64_t imm, uint8_t rt){
     insn ret(0,pc);
     
-    retassure(imm < (1UL<<19), "immediate difference needs to be smaller than (1<<19)");
+    if (imm > pc) {
+        retassure(imm-pc < (1UL<<18), "immediate difference needs to be smaller than (1<<18)");
+    }else{
+        retassure(pc-imm < (1UL<<18), "immediate difference needs to be smaller than (1<<18)");
+    }
+    imm -= pc;
 
     ret._opcode |= SET_BITS(0b00011000, 24);
-    ret._opcode |= SET_BITS(imm, 5);
+    ret._opcode |= SET_BITS(imm & ((1UL<<19)-1), 5);
     ret._opcode |= SET_BITS(rt & 0b11111, 0);
     
     return ret;
