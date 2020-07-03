@@ -205,8 +205,13 @@ insn insn::new_literal_ldr(loc_t pc, uint64_t imm, uint8_t rt){
     }else{
         retassure(pc-imm < (1UL<<18), "immediate difference needs to be smaller than (1<<18)");
     }
+
     imm -= pc;
 
+    retassure((imm & 0b11) == 0, "immediate needs to be 4 byte aligned");
+
+    imm >>=2;
+        
     ret._opcode |= SET_BITS(0b00011000, 24);
     ret._opcode |= SET_BITS(imm & ((1UL<<19)-1), 5);
     ret._opcode |= SET_BITS(rt & 0b11111, 0);
