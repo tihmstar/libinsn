@@ -133,6 +133,8 @@ namespace tihmstar{
             static insn new_immediate_movz(loc_t pc, int64_t imm, uint8_t rd, uint8_t rm);
             static insn new_immediate_movk(loc_t pc, int64_t imm, uint8_t rd, uint8_t rm);
             static insn new_immediate_ldr(loc_t pc, int64_t imm, uint8_t rn, uint8_t rt);
+
+            static insn new_literal_ldr(loc_t pc, uint64_t imm, uint8_t rt);
         };
     };
 };

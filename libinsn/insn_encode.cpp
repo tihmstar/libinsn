@@ -24,6 +24,9 @@ static constexpr uint64_t SET_BITS(uint64_t v, int begin) { return (((uint64_t)v
 
 using namespace tihmstar::libinsn;
 
+#pragma mark general
+
+
 insn insn::new_general_adr(loc_t pc, uint64_t imm, uint8_t rd){
     insn ret(0,pc);
     
@@ -76,6 +79,8 @@ insn insn::new_general_br(loc_t pc, uint8_t rn){
 }
 
 
+#pragma mark register
+
 insn insn::new_register_mov(loc_t pc, int64_t imm, uint8_t rd, uint8_t rn, uint8_t rm){
     insn ret(0,pc);
     
@@ -87,6 +92,22 @@ insn insn::new_register_mov(loc_t pc, int64_t imm, uint8_t rd, uint8_t rn, uint8
     
     return ret;
 }
+
+insn insn::new_register_ccmp(loc_t pc, cond condition, uint8_t flags, uint8_t rn, uint8_t rm){
+    insn ret(0,pc);
+
+    ret._opcode |= SET_BITS(0b1111010010, 21) | SET_BITS(1, 31);//64bit val (x regs, not w regs)
+
+    ret._opcode |= SET_BITS(rm % (1<<5), 16);
+    ret._opcode |= SET_BITS((uint8_t)condition % (1<<4), 12);
+    ret._opcode |= SET_BITS(rn % (1<<5), 5);
+    ret._opcode |= SET_BITS(flags % (1<<5), 0);
+
+    return ret;
+}
+
+
+#pragma mark literal immediate
 
 insn insn::new_immediate_add(loc_t pc, uint64_t imm, uint8_t rn, uint8_t rd){
     insn ret(0,pc);
@@ -107,7 +128,6 @@ insn insn::new_immediate_add(loc_t pc, uint64_t imm, uint8_t rn, uint8_t rd){
 
     return ret;
 }
-
 
 insn insn::new_immediate_bl(loc_t pc, int64_t imm){
     insn ret(0,pc);
@@ -174,15 +194,17 @@ insn insn::new_immediate_ldr(loc_t pc, int64_t imm, uint8_t rn, uint8_t rt){
     return ret;
 }
 
-insn insn::new_register_ccmp(loc_t pc, cond condition, uint8_t flags, uint8_t rn, uint8_t rm){
+
+#pragma mark literal
+
+insn insn::new_literal_ldr(loc_t pc, uint64_t imm, uint8_t rt){
     insn ret(0,pc);
+    
+    retassure(imm < (1UL<<19), "immediate difference needs to be smaller than (1<<19)");
 
-    ret._opcode |= SET_BITS(0b1111010010, 21) | SET_BITS(1, 31);//64bit val (x regs, not w regs)
-
-    ret._opcode |= SET_BITS(rm % (1<<5), 16);
-    ret._opcode |= SET_BITS((uint8_t)condition % (1<<4), 12);
-    ret._opcode |= SET_BITS(rn % (1<<5), 5);
-    ret._opcode |= SET_BITS(flags % (1<<5), 0);
-
+    ret._opcode |= SET_BITS(0b00011000, 24);
+    ret._opcode |= SET_BITS(imm, 5);
+    ret._opcode |= SET_BITS(rt & 0b11111, 0);
+    
     return ret;
 }
