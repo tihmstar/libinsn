@@ -126,6 +126,7 @@ namespace tihmstar{
             static insn new_register_mov(loc_t pc, int64_t imm, uint8_t rd, uint8_t rn, uint8_t rm);
             static insn new_register_ccmp(loc_t pc, cond condition, uint8_t flags, uint8_t rn, uint8_t rm);
 
+            static insn new_immediate_add(loc_t pc, uint64_t imm, uint8_t rn, uint8_t rd);
             static insn new_immediate_bl(loc_t pc, int64_t imm);
             static insn new_immediate_b(loc_t pc, uint64_t imm);
             static insn new_immediate_movz(loc_t pc, int64_t imm, uint8_t rd, uint8_t rm);

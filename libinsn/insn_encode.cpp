@@ -78,6 +78,27 @@ insn insn::new_register_mov(loc_t pc, int64_t imm, uint8_t rd, uint8_t rn, uint8
     return ret;
 }
 
+insn insn::new_immediate_add(loc_t pc, uint64_t imm, uint8_t rn, uint8_t rd){
+    insn ret(0,pc);
+    uint8_t shift = 0b00;
+    
+    if ((imm & ((1UL << 12)-1)) == 0) {
+        //DO LSL 12
+        shift = 0b01;
+        imm >>= 12;
+    }
+    retassure(imm < (1UL<<12), "immediate difference needs to be smaller than (1<<12)");
+    
+    ret._opcode |= SET_BITS(0b0010001, 24);
+    ret._opcode |= SET_BITS(shift, 22);
+    ret._opcode |= SET_BITS(imm, 10);
+    ret._opcode |= SET_BITS(rn & 0b11111, 5);
+    ret._opcode |= SET_BITS(rd & 0b11111, 0);
+
+    return ret;
+}
+
+
 insn insn::new_immediate_bl(loc_t pc, int64_t imm){
     insn ret(0,pc);
     
