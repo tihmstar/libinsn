@@ -31,17 +31,17 @@ insn insn::new_general_adr(loc_t pc, uint64_t imm, uint8_t rd){
     insn ret(0,pc);
     
     ret._opcode |= SET_BITS(0b10000, 24);
-    ret._opcode |= (rd % (1<<5));
+    ret._opcode |= SET_BITS(rd & 0b11111, 0);
     
     if (imm > pc) {
         retassure(imm-pc < (1UL<<20), "immediate difference needs to be smaller than (1<<20)");
     }else{
         retassure(pc-imm < (1UL<<20), "immediate difference needs to be smaller than (1<<20)");
     }
+    imm -= pc;
     
-    uint64_t diff = pc - imm;
-    ret._opcode |= SET_BITS(BIT_RANGE(diff,0,1), 29);
-    ret._opcode |= SET_BITS(BIT_RANGE(diff,2,19), 5);
+    ret._opcode |= SET_BITS(BIT_RANGE(imm,0,1), 29);
+    ret._opcode |= SET_BITS(BIT_RANGE(imm,2,19), 5);
     
     return ret;
 }
@@ -52,29 +52,107 @@ insn insn::new_general_adrp(loc_t pc, uint64_t imm, uint8_t rd){
     retassure((imm & 0xfff) == 0, "immediate needs to be 0xfff byte aligned!");
     
     ret._opcode |= SET_BITS(0b10010000, 24);
-    ret._opcode |= (rd % (1<<5));
-    
+    ret._opcode |= SET_BITS(rd & 0b11111, 0);
+
     if (imm > pc) {
         retassure(imm-pc < (1UL<<32), "immediate difference needs to be smaller than (1<<32)");
     }else{
         retassure(pc-imm < (1UL<<32), "immediate difference needs to be smaller than (1<<32)");
     }
     
-    uint64_t diff = pc - imm;
-    diff >>= 12;
+    imm -=pc;
     
-    ret._opcode |= SET_BITS(BIT_RANGE(diff,0,1), 29);
-    ret._opcode |= SET_BITS(BIT_RANGE(diff,2,19), 5);
+    ret._opcode |= SET_BITS(BIT_RANGE(imm,0,1), 29);
+    ret._opcode |= SET_BITS(BIT_RANGE(imm,2,19), 5);
     
     return ret;
 }
 
-insn insn::new_general_br(loc_t pc, uint8_t rn){
+insn insn::new_general_br(loc_t pc, uint8_t rn, uint8_t rm, enum pactype pac){
     insn ret(0,pc);
-    
-    ret._opcode |= SET_BITS(0b1101011000011111000000, 10);
+    uint8_t Z = 0;
+    uint8_t A = 0;
+    uint8_t M = 0;
+
+    ret._opcode |= SET_BITS(0b1101011, 25);
+    ret._opcode |= SET_BITS(0b111110000, 12);
     ret._opcode |= SET_BITS(rn & 0b11111, 5);
 
+    if (pac == pac_none) {
+        Z = 0;
+        A = 0;
+        M = 0;
+        rm = 0;
+    }else{
+        A = 1;
+        switch (pac) {
+            case pac_AA:
+                Z = 1;
+                M = 0;
+                break;
+            case pac_AAZ:
+                Z = 0;
+                M = 0;
+                rm = 0b11111;
+                break;
+            case pac_AB:
+                Z = 1;
+                M = 1;
+                break;
+            case pac_ABZ:
+                Z = 0;
+                M = 1;
+                rm = 0b11111;
+                break;
+
+            case pac_none: //not reached!
+            default:
+                reterror("unexpecetd pac type!");
+                break;
+        }
+    }
+    
+    ret._opcode |= SET_BITS(Z, 24);
+    ret._opcode |= SET_BITS(A, 11);
+    ret._opcode |= SET_BITS(M, 10);
+    ret._opcode |= SET_BITS(rm & 0b11111, 5);
+
+    return ret;
+}
+
+insn insn::new_general_ldp(loc_t pc, int8_t imm, uint8_t rt, uint8_t rt2, uint8_t rn, bool isPreindex){
+    insn ret(0,pc);
+    ret._opcode |= SET_BITS(0b1010100011, 22);
+
+    ret._opcode |= SET_BITS(isPreindex & 1, 24);
+
+    retassure(imm < 64 || imm <= -64, "immediate needs to be 7 bit signed int");
+
+    ret._opcode |= SET_BITS(rt2 & 0b11111, 10);
+    ret._opcode |= SET_BITS(rn & 0b11111, 5);
+    ret._opcode |= SET_BITS(rt & 0b11111, 0);
+    
+    return ret;
+}
+
+insn insn::new_general_stp(loc_t pc, int8_t imm, uint8_t rt, uint8_t rt2, uint8_t rn, bool isPreindex){
+    insn ret(0,pc);
+    ret._opcode |= SET_BITS(0b1010100010, 22);
+
+    ret._opcode |= SET_BITS(isPreindex & 1, 24);
+
+    retassure(imm < 64 || imm <= -64, "immediate needs to be 7 bit signed int");
+
+    ret._opcode |= SET_BITS(rt2 & 0b11111, 10);
+    ret._opcode |= SET_BITS(rn & 0b11111, 5);
+    ret._opcode |= SET_BITS(rt & 0b11111, 0);
+    
+    return ret;
+}
+
+insn insn::new_general_nop(loc_t pc){
+    insn ret(0,pc);
+    ret._opcode = 0b11010101000000110010000000011111;
     return ret;
 }
 
@@ -157,6 +235,39 @@ insn insn::new_immediate_b(loc_t pc, uint64_t imm){
     return ret;
 }
 
+insn insn::new_immediate_bcond(loc_t pc, uint64_t imm, enum cond condition){
+    insn ret(0,pc);
+    retassure((imm & 0b11) == 0, "immediate needs to be 4 byte aligned!");
+
+    ret._opcode |= SET_BITS(0b01010100, 24);
+    
+    if (imm > pc) {
+        retassure(imm-pc < (1UL<<19), "immediate difference needs to be smaller than (1<<19)");
+    }else{
+        retassure(pc-imm < (1UL<<19), "immediate difference needs to be smaller than (1<<19)");
+    }
+    imm -= pc;
+    imm >>=2;
+    ret._opcode |= SET_BITS(imm,5);
+    ret._opcode |= SET_BITS(condition & 0b1111, 0);
+    
+    return ret;
+}
+
+insn insn::new_immediate_cbz(loc_t pc, int32_t imm, int8_t rt, bool isCBNZ){
+    insn ret(0,pc);
+    ret._opcode |= SET_BITS(0b1011010, 25);
+
+    ret._opcode |= SET_BITS(isCBNZ & 1, 24);
+
+    retassure(imm < 0x80000 || imm <= -0x80000, "imm nees to be signed 19 bit");
+    
+    ret._opcode |= SET_BITS(imm & 0x7ffff, 5);
+    ret._opcode |= SET_BITS(rt & 0b11111, 0);
+    
+    return ret;
+}
+
 insn insn::new_immediate_movz(loc_t pc, int64_t imm, uint8_t rd, uint8_t rm){
     insn ret(0,pc);
 
@@ -193,6 +304,23 @@ insn insn::new_immediate_ldr(loc_t pc, int64_t imm, uint8_t rn, uint8_t rt){
 
     return ret;
 }
+
+insn insn::new_immediate_tbz(loc_t pc, int16_t imm, uint8_t b5, uint8_t b40, uint8_t rt, bool isTBNZ){
+    insn ret(0,pc);
+    ret._opcode |= SET_BITS(0b011011, 25);
+    ret._opcode |= SET_BITS(b5 & 1, 31);
+    ret._opcode |= SET_BITS(b40 & 0b11111, 19);
+
+    ret._opcode |= SET_BITS(isTBNZ & 1, 24);
+
+    retassure(imm < 0x4000 || imm <= -0x4000, "imm nees to be signed 14 bit");
+    
+    ret._opcode |= SET_BITS(imm & 0x3fff, 5);
+    ret._opcode |= SET_BITS(rt & 0b11111, 0);
+    
+    return ret;
+}
+
 
 
 #pragma mark literal

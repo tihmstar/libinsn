@@ -150,8 +150,10 @@ constexpr enum insn::type is_ret(uint32_t i){
     return (((0b11111 << 5) | i) == 0b11010110010111110000001111100000) ? insn::ret : insn::unknown;
 }
 
-constexpr enum insn::type is_br(uint32_t i){
-    return (((0b11111 << 5) | i) == 0b11010110000111110000001111100000) ? insn::br : insn::unknown;
+constexpr enum insn::type is_br_blr(uint32_t i){
+    i = (BIT_RANGE(i | SET_BITS(1, 24), 12, 31));
+    return (i == 0b11010111000111110000) ? insn::br //check for BR
+        :  (i == 0b11010111001111110000) ? insn::blr : insn::unknown; //check for BLR
 }
 
 constexpr enum insn::type is_ldrh(uint32_t i){
@@ -258,7 +260,7 @@ constexpr const insn_type_test_func special_decoders_stp_ldp[] = {
 
 constexpr const insn_type_test_func special_decoders_0b11010110[] = {
     is_ret,
-    is_br,
+    is_br_blr,
     NULL
 };
 
@@ -560,6 +562,23 @@ enum insn::supertype insn::supertype(){
     }
 }
 
+enum insn::pactype insn::pactype(){
+    switch (type()) {
+        case br:
+            if (BIT_AT(_opcode, 11) == 1) {//is authenticated
+                if (BIT_AT(_opcode, 10) == 0) {
+                    //is A
+                    return (BIT_AT(_opcode, 24) == 1) ? pac_AAZ : pac_AA;
+                }else{
+                    //is B
+                    return (BIT_AT(_opcode, 24) == 1) ? pac_ABZ : pac_AB;
+                }
+            }
+        default:
+            return pac_none;
+    }
+}
+
 #pragma mark register
 
 int64_t insn::imm(){
@@ -756,6 +775,12 @@ uint8_t insn::rm(){
         case mov:
         case subs:
             return BIT_RANGE(_opcode, 16, 20);
+            
+        case br:
+        case blr:
+            retassure(pactype() != pac_none, "wrong pactype");
+            return BIT_RANGE(_opcode, 0, 4);
+            
         default:
             reterror("failed to get rm");
             break;
