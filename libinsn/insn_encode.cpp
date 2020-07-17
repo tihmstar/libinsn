@@ -41,7 +41,7 @@ insn insn::new_general_adr(loc_t pc, uint64_t imm, uint8_t rd){
     imm -= pc;
     
     ret._opcode |= SET_BITS(BIT_RANGE(imm,0,1), 29);
-    ret._opcode |= SET_BITS(BIT_RANGE(imm,2,19), 5);
+    ret._opcode |= SET_BITS(BIT_RANGE(imm,2,20), 5);
     
     return ret;
 }
