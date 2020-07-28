@@ -156,6 +156,12 @@ insn insn::new_general_nop(loc_t pc){
     return ret;
 }
 
+insn insn::new_general_ret(loc_t pc){
+    insn ret(0,pc);
+    ret._opcode = 0b11010110010111110000001111000000;
+    return ret;
+}
+
 
 #pragma mark register
 

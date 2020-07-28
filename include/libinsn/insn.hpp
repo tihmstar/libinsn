@@ -138,6 +138,7 @@ namespace tihmstar{
             static insn new_general_ldp(loc_t pc, int8_t imm, uint8_t rt, uint8_t rt2, uint8_t rn, bool isPreindex = false);
             static insn new_general_stp(loc_t pc, int8_t imm, uint8_t rt, uint8_t rt2, uint8_t rn, bool isPreindex = false);
             static insn new_general_nop(loc_t pc);
+            static insn new_general_ret(loc_t pc);
 
 #pragma mark register
             static insn new_register_ccmp(loc_t pc, cond condition, uint8_t flags, uint8_t rn, uint8_t rm);
