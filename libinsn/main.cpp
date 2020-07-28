@@ -13,11 +13,15 @@ using namespace tihmstar::libinsn;
 
 int main(int argc, const char * argv[]) {
 
-    uint64_t opcode = 0xd10243ff; //sub
+    uint64_t opcode = 0xf9400a68; //ldr
     
     insn test(opcode,0x4000);
     
+    
     auto a = test.type();
+    auto s =test.subtype();
+
+    auto i = test.imm();
     
     printf("");
     return 0;

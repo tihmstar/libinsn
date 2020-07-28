@@ -246,6 +246,13 @@ constexpr enum insn::type is_pacibsp(uint32_t i){
     return (i == 0b11010101000000110010001101111111) ? insn::pacibsp : insn::unknown;
 }
 
+constexpr enum insn::type is_ldr(uint32_t i){
+    return (
+            (BIT_RANGE(i | SET_BITS(1, 23), 22, 29) == 0b11110111)/*SIMD LDR*/
+            || (BIT_RANGE(i | SET_BITS(1, 30), 22, 31) == 0b1111100101)
+            ) ? insn::ldr : insn::unknown;
+}
+
 
 #pragma mark decoding unit (special decoders)
 
@@ -383,6 +390,16 @@ constexpr const insn_type_test_func special_decoders_0b11011010[] = {
     NULL
 };
 
+constexpr const insn_type_test_func special_decoders_0b11111001[] = {
+    is_ldr,
+    NULL
+};
+
+constexpr const insn_type_test_func special_decoders_0b10111001[] = {
+    is_ldr,
+    NULL
+};
+
 
 #pragma mark decoding unit
 
@@ -443,7 +460,10 @@ struct decoder_stage1{
         _stage1_insn[0b00011011] = {false, .next_stage_decoder = special_decoders_0b00011011};
         _stage1_insn[0b10011011] = {false, .next_stage_decoder = special_decoders_0b10011011};
         _stage1_insn[0b11011010] = {false, .next_stage_decoder = special_decoders_0b11011010};
+        _stage1_insn[0b11111001] = {false, .next_stage_decoder = special_decoders_0b11111001};
+        _stage1_insn[0b10111001] = {false, .next_stage_decoder = special_decoders_0b10111001};
 
+            
     };
     constexpr decoder_val operator[](uint8_t i) const{
         return _stage1_insn[i];
@@ -497,6 +517,8 @@ enum insn::subtype insn::subtype(){
             if ((((_opcode>>22) | (1 << 8)) == 0b1111100001) && BIT_RANGE(_opcode, 10, 11) == 0b10)
                 return st_register;
             else if (_opcode>>31)
+                return st_immediate;
+            else if ((BIT_RANGE(_opcode | SET_BITS(1, 30), 22, 31) == 0b1111100101))
                 return st_immediate;
             else
                 return st_literal;
@@ -610,6 +632,9 @@ int64_t insn::imm(){
                 reterror("can't get imm value of ldr that has non immediate subtype");
                 break;
             }
+            if ((BIT_RANGE(_opcode | SET_BITS(1, 30), 22, 31) == 0b1111100101))
+                return BIT_RANGE(_opcode, 10, 21) << BIT_RANGE(_opcode, 30, 31); //unsigned offset
+            
             if(BIT_RANGE(_opcode, 24, 25)){
                 // Unsigned Offset
                 return BIT_RANGE(_opcode, 10, 21) << (_opcode>>30);
