@@ -435,35 +435,36 @@ struct decoder_stage1{
 
         for (int i=0; i<4; i++) _stage1_insn[0b00101000 | SET_BITS(i & 1,7) | SET_BITS(i >> 1,0)] = {false, .next_stage_decoder = special_decoders_stp_ldp};
 
+#define defineDecoder(binaryByte) _stage1_insn[binaryByte] = {false, .next_stage_decoder = special_decoders_##binaryByte};
             
-        _stage1_insn[0b11010110] = {false, .next_stage_decoder = special_decoders_0b11010110};
-        _stage1_insn[0b01111000] = {false, .next_stage_decoder = special_decoders_0b01111000};
-        _stage1_insn[0b01110010] = {false, .next_stage_decoder = special_decoders_0b01110010};
-        _stage1_insn[0b11110010] = {false, .next_stage_decoder = special_decoders_0b11110010};
-        _stage1_insn[0b00110010] = {false, .next_stage_decoder = special_decoders_0b00110010};
-        _stage1_insn[0b10110010] = {false, .next_stage_decoder = special_decoders_0b10110010};
-        _stage1_insn[0b10001000] = {false, .next_stage_decoder = special_decoders_0b10001000};
-        _stage1_insn[0b11001000] = {false, .next_stage_decoder = special_decoders_0b11001000};
-        _stage1_insn[0b00111000] = {false, .next_stage_decoder = special_decoders_0b00111000};
-        _stage1_insn[0b10111000] = {false, .next_stage_decoder = special_decoders_0b10111000};
-        _stage1_insn[0b11111000] = {false, .next_stage_decoder = special_decoders_0b11111000};
-        _stage1_insn[0b10111000] = {false, .next_stage_decoder = special_decoders_0b01010010};
-        _stage1_insn[0b11111000] = {false, .next_stage_decoder = special_decoders_0b11010010};
-        _stage1_insn[0b01010100] = {false, .next_stage_decoder = special_decoders_0b01010100};
-        _stage1_insn[0b11010101] = {false, .next_stage_decoder = special_decoders_0b11010101};
-        _stage1_insn[0b00010010] = {false, .next_stage_decoder = special_decoders_0b00010010};
-        _stage1_insn[0b10010010] = {false, .next_stage_decoder = special_decoders_0b10010010};
-        _stage1_insn[0b00011010] = {false, .next_stage_decoder = special_decoders_0b00011010};
-        _stage1_insn[0b10011010] = {false, .next_stage_decoder = special_decoders_0b10011010};
-        _stage1_insn[0b01111010] = {false, .next_stage_decoder = special_decoders_0b01111010};
-        _stage1_insn[0b11111010] = {false, .next_stage_decoder = special_decoders_0b11111010};
-        _stage1_insn[0b00011011] = {false, .next_stage_decoder = special_decoders_0b00011011};
-        _stage1_insn[0b10011011] = {false, .next_stage_decoder = special_decoders_0b10011011};
-        _stage1_insn[0b11011010] = {false, .next_stage_decoder = special_decoders_0b11011010};
-        _stage1_insn[0b11111001] = {false, .next_stage_decoder = special_decoders_0b11111001};
-        _stage1_insn[0b10111001] = {false, .next_stage_decoder = special_decoders_0b10111001};
-
+        defineDecoder(0b11010110);
+        defineDecoder(0b01111000);
+        defineDecoder(0b01110010);
+        defineDecoder(0b11110010);
+        defineDecoder(0b00110010);
+        defineDecoder(0b10110010);
+        defineDecoder(0b10001000);
+        defineDecoder(0b11001000);
+        defineDecoder(0b00111000);
+        defineDecoder(0b10111000);
+        defineDecoder(0b11111000);
+        defineDecoder(0b10111000);
+        defineDecoder(0b11010010);
+        defineDecoder(0b01010100);
+        defineDecoder(0b11010101);
+        defineDecoder(0b00010010);
+        defineDecoder(0b10010010);
+        defineDecoder(0b00011010);
+        defineDecoder(0b10011010);
+        defineDecoder(0b01111010);
+        defineDecoder(0b11111010);
+        defineDecoder(0b00011011);
+        defineDecoder(0b10011011);
+        defineDecoder(0b11011010);
+        defineDecoder(0b11111001);
+        defineDecoder(0b10111001);
             
+#undef defineDecoder
     };
     constexpr decoder_val operator[](uint8_t i) const{
         return _stage1_insn[i];
