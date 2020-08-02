@@ -448,7 +448,7 @@ struct decoder_stage1{
         defineDecoder(0b00111000);
         defineDecoder(0b10111000);
         defineDecoder(0b11111000);
-        defineDecoder(0b10111000);
+        defineDecoder(0b01010010);
         defineDecoder(0b11010010);
         defineDecoder(0b01010100);
         defineDecoder(0b11010101);

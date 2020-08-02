@@ -13,7 +13,7 @@ using namespace tihmstar::libinsn;
 
 int main(int argc, const char * argv[]) {
 
-    uint64_t opcode = 4072784585; //x9, #0xe16, lsl #32
+    uint64_t opcode = 1384123016; //x9, #0xe16, lsl #32
     
     insn test(opcode,0x4000);
     
