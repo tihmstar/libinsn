@@ -627,7 +627,7 @@ int64_t insn::imm(){
             return _pc + (signExtend64(BIT_RANGE(_opcode, 5, 18), 13)<<2); //untested
         case movk:
         case movz:
-            return BIT_RANGE(_opcode, 5, 20) << (BIT_RANGE(_opcode, 21, 22) * 16);
+            return ((uint64_t)BIT_RANGE(_opcode, 5, 20)) << (BIT_RANGE(_opcode, 21, 22) * 16);
         case ldr:
             if(subtype() != st_immediate){
                 reterror("can't get imm value of ldr that has non immediate subtype");
