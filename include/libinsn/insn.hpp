@@ -10,6 +10,7 @@
 #define insn_hpp
 
 #include <vector>
+#include <stdint.h>
 
 namespace tihmstar{
     namespace libinsn{
