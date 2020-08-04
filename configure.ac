@@ -27,8 +27,8 @@ case $host_os in
 esac
 
 
-CXXFLAGS+=" -std=c++14 -O3"
-CFLAGS+=" -std=c11"
+CXXFLAGS+=" -std=c++14 -O3 -fPIC"
+CFLAGS+=" -std=c11 -fPIC"
 CXXFLAGS+=" -D EXPECTIONNAME=INSNexception"
 
 # Checks for libraries.
