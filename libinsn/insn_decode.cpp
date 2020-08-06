@@ -226,6 +226,10 @@ constexpr enum insn::type is_mrs(uint32_t i){
     return (BIT_RANGE(i, 20, 31) == 0b110101010011) ? insn::mrs : insn::unknown;
 }
 
+constexpr enum insn::type is_msr(uint32_t i){
+    return (BIT_RANGE(i, 20, 31) == 0b110101010001) ? insn::msr : insn::unknown;
+}
+
 constexpr enum insn::type is_ccmp(uint32_t i){
     return (BIT_RANGE(i, 21, 30) == 0b1111010010/* register */) ? insn::ccmp : insn::unknown;
 }
@@ -339,8 +343,9 @@ constexpr const insn_type_test_func special_decoders_0b01010100[] = {
 
 constexpr const insn_type_test_func special_decoders_0b11010101[] = {
     is_nop,
-    is_mrs,
     is_pacibsp,
+    is_mrs,
+    is_msr,
     NULL
 };
 
@@ -774,6 +779,7 @@ uint8_t insn::rt(){
         case ldrh:
         case stp:
         case mrs:
+        case msr:
             return (_opcode % (1<<5));
 
         default:
@@ -833,6 +839,7 @@ uint64_t insn::special(){
         case tbnz:
             return BIT_RANGE(_opcode, 19, 23);
         case mrs:
+        case msr:
             return BIT_RANGE(_opcode, 5, 19);
         case ccmp:
             return BIT_RANGE(_opcode, 0, 3);

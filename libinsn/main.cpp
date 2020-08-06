@@ -13,7 +13,7 @@ using namespace tihmstar::libinsn;
 
 int main(int argc, const char * argv[]) {
 
-    uint64_t opcode = 1384123016; //x9, #0xe16, lsl #32
+    uint64_t opcode = 3575123968; //msr        sctlr_el1, x0
     
     insn test(opcode,0x4000);
     
@@ -21,7 +21,7 @@ int main(int argc, const char * argv[]) {
     auto a = test.type();
     auto s =test.subtype();
 
-    auto i = test.imm();
+    insn::systemreg sp = (insn::systemreg)test.special();
     
     printf("");
     return 0;

@@ -57,7 +57,8 @@ namespace tihmstar{
                 madd,
                 pacib,
                 pacizb,
-                pacibsp
+                pacibsp,
+                msr
             };
             enum subtype{
                 st_general,
@@ -89,7 +90,8 @@ namespace tihmstar{
                 AL = 0b1110
             };
             enum systemreg : uint64_t{
-                tpidr_el1 = 0x4684
+                tpidr_el1 = 0x4684,
+                sctlr_el1 = 0x4080
             };
             enum pactype{
                 pac_none = 0,
