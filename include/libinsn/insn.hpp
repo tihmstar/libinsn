@@ -90,8 +90,9 @@ namespace tihmstar{
                 AL = 0b1110
             };
             enum systemreg : uint64_t{
-                tpidr_el1 = 0x4684,
-                sctlr_el1 = 0x4080
+                tpidr_el1   = 0x4684,
+                sctlr_el1   = 0x4080,
+                tcr_el1     = 0x4102
             };
             enum pactype{
                 pac_none = 0,
