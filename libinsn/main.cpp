@@ -13,18 +13,18 @@ using namespace tihmstar::libinsn;
 
 int main(int argc, const char * argv[]) {
 
-    uint64_t opcode = 0x58000101; //ldr        x1, =...
+    uint64_t opcode = 0xa9008801; //stp        x1, x2, [x0, #0x8]
     
     insn test(opcode,0);
     
     
     auto a = test.type();
     auto s =test.subtype();
+    auto c = test.classtype();
     auto i = test.imm();
     
-    insn ts = insn::new_literal_ldr(0, 4*8, 1);
-    uint32_t opcode2 = ts.opcode();
-
+    insn t2 = insn::new_general_stp_offset(0, 8, 1, 2, 0);
+    uint32_t opcode2 = t2.opcode();
     
     printf("");
     return 0;

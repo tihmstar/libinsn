@@ -592,6 +592,23 @@ enum insn::supertype insn::supertype(){
     }
 }
 
+enum insn::classtype insn::classtype(){
+    switch (type()) {
+        case stp:
+        case ldp:
+            if (BIT_RANGE(_opcode, 23, 30) == 0b01010001)
+                return cl_postindex;
+            else if (BIT_RANGE(_opcode, 23, 30) == 0b01010011)
+                return cl_preindex;
+            else if (BIT_RANGE(_opcode, 23, 30) == 0b01010010)
+                return cl_offset;
+            else
+                reterror("unexpected classtype for insn");
+        default:
+            return cl_general;
+    }
+}
+
 enum insn::pactype insn::pactype(){
     switch (type()) {
         case br:

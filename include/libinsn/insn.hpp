@@ -72,6 +72,12 @@ namespace tihmstar{
                 sut_branch_imm,
                 sut_memory //load or store
             };
+            enum classtype{
+                cl_general,
+                cl_preindex,
+                cl_postindex,
+                cl_offset
+            };
             enum cond{
                 EQ = 0b0000,
                 NE = 0b0001,
@@ -119,6 +125,7 @@ namespace tihmstar{
             type type();
             subtype subtype();
             supertype supertype();
+            classtype classtype();
             pactype pactype();
             int64_t imm();
             uint8_t rd();
@@ -140,8 +147,10 @@ namespace tihmstar{
             static insn new_general_adr(loc_t pc, uint64_t imm, uint8_t rd);
             static insn new_general_adrp(loc_t pc, uint64_t imm, uint8_t rd);
             static insn new_general_br(loc_t pc, uint8_t rn, uint8_t rm = 0, enum pactype pac = pac_none);
-            static insn new_general_ldp(loc_t pc, int8_t imm, uint8_t rt, uint8_t rt2, uint8_t rn, bool isPreindex = false);
-            static insn new_general_stp(loc_t pc, int8_t imm, uint8_t rt, uint8_t rt2, uint8_t rn, bool isPreindex = false);
+            static insn new_general_ldp_index(loc_t pc, int8_t imm, uint8_t rt, uint8_t rt2, uint8_t rn, bool isPreindex = false);
+            static insn new_general_ldp_offset(loc_t pc, int8_t imm, uint8_t rt, uint8_t rt2, uint8_t rn);
+            static insn new_general_stp_index(loc_t pc, int8_t imm, uint8_t rt, uint8_t rt2, uint8_t rn, bool isPreindex = false);
+            static insn new_general_stp_offset(loc_t pc, int8_t imm, uint8_t rt, uint8_t rt2, uint8_t rn);
             static insn new_general_nop(loc_t pc);
             static insn new_general_ret(loc_t pc);
 

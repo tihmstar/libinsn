@@ -120,7 +120,7 @@ insn insn::new_general_br(loc_t pc, uint8_t rn, uint8_t rm, enum pactype pac){
     return ret;
 }
 
-insn insn::new_general_ldp(loc_t pc, int8_t imm, uint8_t rt, uint8_t rt2, uint8_t rn, bool isPreindex){
+insn insn::new_general_ldp_index(loc_t pc, int8_t imm, uint8_t rt, uint8_t rt2, uint8_t rn, bool isPreindex){
     insn ret(0,pc);
     ret._opcode |= SET_BITS(0b1010100011, 22);
 
@@ -135,11 +135,37 @@ insn insn::new_general_ldp(loc_t pc, int8_t imm, uint8_t rt, uint8_t rt2, uint8_
     return ret;
 }
 
-insn insn::new_general_stp(loc_t pc, int8_t imm, uint8_t rt, uint8_t rt2, uint8_t rn, bool isPreindex){
+insn insn::new_general_ldp_offset(loc_t pc, int8_t imm, uint8_t rt, uint8_t rt2, uint8_t rn){
+    insn ret(0,pc);
+    ret._opcode |= SET_BITS(0b1010100101, 22);
+
+    retassure(imm < 64 || imm <= -64, "immediate needs to be 7 bit signed int");
+
+    ret._opcode |= SET_BITS(rt2 & 0b11111, 10);
+    ret._opcode |= SET_BITS(rn & 0b11111, 5);
+    ret._opcode |= SET_BITS(rt & 0b11111, 0);
+    
+    return ret;
+}
+
+insn insn::new_general_stp_index(loc_t pc, int8_t imm, uint8_t rt, uint8_t rt2, uint8_t rn, bool isPreindex){
     insn ret(0,pc);
     ret._opcode |= SET_BITS(0b1010100010, 22);
 
     ret._opcode |= SET_BITS(isPreindex & 1, 24);
+
+    retassure(imm < 64 || imm <= -64, "immediate needs to be 7 bit signed int");
+
+    ret._opcode |= SET_BITS(rt2 & 0b11111, 10);
+    ret._opcode |= SET_BITS(rn & 0b11111, 5);
+    ret._opcode |= SET_BITS(rt & 0b11111, 0);
+    
+    return ret;
+}
+
+insn insn::new_general_stp_offset(loc_t pc, int8_t imm, uint8_t rt, uint8_t rt2, uint8_t rn){
+    insn ret(0,pc);
+    ret._opcode |= SET_BITS(0b1010100100, 22);
 
     retassure(imm < 64 || imm <= -64, "immediate needs to be 7 bit signed int");
 
