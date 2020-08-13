@@ -127,6 +127,9 @@ insn insn::new_general_ldp_index(loc_t pc, int8_t imm, uint8_t rt, uint8_t rt2, 
     ret._opcode |= SET_BITS(isPreindex & 1, 24);
 
     retassure(imm < 64 || imm <= -64, "immediate needs to be 7 bit signed int");
+    imm >>= 3;
+    ret._opcode |= SET_BITS(imm & 0b1111111, 15);
+
 
     ret._opcode |= SET_BITS(rt2 & 0b11111, 10);
     ret._opcode |= SET_BITS(rn & 0b11111, 5);
@@ -140,6 +143,9 @@ insn insn::new_general_ldp_offset(loc_t pc, int8_t imm, uint8_t rt, uint8_t rt2,
     ret._opcode |= SET_BITS(0b1010100101, 22);
 
     retassure(imm < 64 || imm <= -64, "immediate needs to be 7 bit signed int");
+    imm >>= 3;
+    ret._opcode |= SET_BITS(imm & 0b1111111, 15);
+
 
     ret._opcode |= SET_BITS(rt2 & 0b11111, 10);
     ret._opcode |= SET_BITS(rn & 0b11111, 5);
@@ -155,6 +161,8 @@ insn insn::new_general_stp_index(loc_t pc, int8_t imm, uint8_t rt, uint8_t rt2, 
     ret._opcode |= SET_BITS(isPreindex & 1, 24);
 
     retassure(imm < 64 || imm <= -64, "immediate needs to be 7 bit signed int");
+    imm >>= 3;
+    ret._opcode |= SET_BITS(imm & 0b1111111, 15);
 
     ret._opcode |= SET_BITS(rt2 & 0b11111, 10);
     ret._opcode |= SET_BITS(rn & 0b11111, 5);
@@ -168,6 +176,8 @@ insn insn::new_general_stp_offset(loc_t pc, int8_t imm, uint8_t rt, uint8_t rt2,
     ret._opcode |= SET_BITS(0b1010100100, 22);
 
     retassure(imm < 64 || imm <= -64, "immediate needs to be 7 bit signed int");
+    imm >>= 3;
+    ret._opcode |= SET_BITS(imm & 0b1111111, 15);
 
     ret._opcode |= SET_BITS(rt2 & 0b11111, 10);
     ret._opcode |= SET_BITS(rn & 0b11111, 5);
