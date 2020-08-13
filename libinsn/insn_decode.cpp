@@ -437,6 +437,8 @@ struct decoder_stage1{
         for (int i=0; i<2; i++) _stage1_insn[0b01010001 | SET_BITS(i,7)] = {true, insn::sub}; //imediate
         for (int i=0; i<2; i++) _stage1_insn[0b01001011 | SET_BITS(i,7)] = {true, insn::sub}; //register
 
+        for (int i=0; i<2; i++) _stage1_insn[0b00011000 | SET_BITS(i,6)] = {true, insn::ldr}; //literal
+
 
         for (int i=0; i<4; i++) _stage1_insn[0b00101000 | SET_BITS(i & 1,7) | SET_BITS(i >> 1,0)] = {false, .next_stage_decoder = special_decoders_stp_ldp};
 
@@ -634,19 +636,21 @@ int64_t insn::imm(){
         case movz:
             return ((uint64_t)BIT_RANGE(_opcode, 5, 20)) << (BIT_RANGE(_opcode, 21, 22) * 16);
         case ldr:
-            if(subtype() != st_immediate){
-                reterror("can't get imm value of ldr that has non immediate subtype");
-                break;
-            }
-            if ((BIT_RANGE(_opcode | SET_BITS(1, 30), 22, 31) == 0b1111100101))
-                return BIT_RANGE(_opcode, 10, 21) << BIT_RANGE(_opcode, 30, 31); //unsigned offset
-            
-            if(BIT_RANGE(_opcode, 24, 25)){
-                // Unsigned Offset
-                return BIT_RANGE(_opcode, 10, 21) << (_opcode>>30);
+            if(subtype() == st_immediate){
+                if ((BIT_RANGE(_opcode | SET_BITS(1, 30), 22, 31) == 0b1111100101))
+                    return BIT_RANGE(_opcode, 10, 21) << BIT_RANGE(_opcode, 30, 31); //unsigned offset
+                
+                if(BIT_RANGE(_opcode, 24, 25)){
+                    // Unsigned Offset
+                    return BIT_RANGE(_opcode, 10, 21) << (_opcode>>30);
+                }else{
+                    // Signed Offset
+                    return signExtend64(BIT_RANGE(_opcode, 12, 21), 9); //untested
+                }
+            }else if(subtype() == st_literal){
+                return BIT_RANGE(_opcode, 5, 23) << 2;
             }else{
-                // Signed Offset
-                return signExtend64(BIT_RANGE(_opcode, 12, 21), 9); //untested
+                reterror("can't get imm value of ldr that has non immediate subtype");
             }
         case strb:
             if(subtype() != st_immediate){

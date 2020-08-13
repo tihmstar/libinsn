@@ -346,7 +346,7 @@ insn insn::new_literal_ldr(loc_t pc, uint64_t imm, uint8_t rt){
 
     imm >>=2;
         
-    ret._opcode |= SET_BITS(0b00011000, 24);
+    ret._opcode |= SET_BITS(0b01011000, 24);
     ret._opcode |= SET_BITS(imm & ((1UL<<19)-1), 5);
     ret._opcode |= SET_BITS(rt & 0b11111, 0);
     
