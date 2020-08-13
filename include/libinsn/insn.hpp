@@ -92,7 +92,8 @@ namespace tihmstar{
             enum systemreg : uint64_t{
                 tpidr_el1   = 0x4684,
                 sctlr_el1   = 0x4080,
-                tcr_el1     = 0x4102
+                tcr_el1     = 0x4102,
+                ttbr0_el1   = 0x4100
             };
             enum pactype{
                 pac_none = 0,
