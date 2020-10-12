@@ -14,6 +14,7 @@
 		8743B0A624211B8F00E4BAFB /* libgeneral.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 8743B0A524211B8F00E4BAFB /* libgeneral.0.dylib */; };
 		8743B0A724211B8F00E4BAFB /* libgeneral.0.dylib in Embed Libraries */ = {isa = PBXBuildFile; fileRef = 8743B0A524211B8F00E4BAFB /* libgeneral.0.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		8785F0E82438833E00CA2F31 /* insn_encode.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8785F0E72438833E00CA2F31 /* insn_encode.cpp */; };
+		87A92A5025343AD50061B2E2 /* insn32_thumb_decode.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 87E1E4302530705500104C9E /* insn32_thumb_decode.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -51,6 +52,9 @@
 		8743B0A32421195100E4BAFB /* INSNexception.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; name = INSNexception.hpp; path = ../include/libinsn/INSNexception.hpp; sourceTree = "<group>"; };
 		8743B0A524211B8F00E4BAFB /* libgeneral.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libgeneral.0.dylib; path = ../../../../usr/local/lib/libgeneral.0.dylib; sourceTree = "<group>"; };
 		8785F0E72438833E00CA2F31 /* insn_encode.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = insn_encode.cpp; sourceTree = "<group>"; };
+		87E1E42F2530705500104C9E /* insn32_thumb.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; name = insn32_thumb.hpp; path = ../include/libinsn/insn32/insn32_thumb.hpp; sourceTree = "<group>"; };
+		87E1E4302530705500104C9E /* insn32_thumb_decode.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = insn32_thumb_decode.cpp; sourceTree = "<group>"; };
+		87E1E4312530705500104C9E /* insn32.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; name = insn32.hpp; path = ../include/libinsn/insn32/insn32.hpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -87,8 +91,9 @@
 			children = (
 				8743B0A32421195100E4BAFB /* INSNexception.hpp */,
 				8743B09B242118C000E4BAFB /* insn.hpp */,
-				8743B09F242118CA00E4BAFB /* insn_decode.cpp */,
 				8785F0E72438833E00CA2F31 /* insn_encode.cpp */,
+				8743B09F242118CA00E4BAFB /* insn_decode.cpp */,
+				87E1E42E2530704E00104C9E /* insn32 */,
 				8743B09C242118C000E4BAFB /* vmem.hpp */,
 				8743B09D242118CA00E4BAFB /* vmem.cpp */,
 				8743B09A242118C000E4BAFB /* vsegment.hpp */,
@@ -104,6 +109,16 @@
 				8743B0A524211B8F00E4BAFB /* libgeneral.0.dylib */,
 			);
 			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		87E1E42E2530704E00104C9E /* insn32 */ = {
+			isa = PBXGroup;
+			children = (
+				87E1E4312530705500104C9E /* insn32.hpp */,
+				87E1E42F2530705500104C9E /* insn32_thumb.hpp */,
+				87E1E4302530705500104C9E /* insn32_thumb_decode.cpp */,
+			);
+			name = insn32;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -167,6 +182,7 @@
 				8743B0A0242118CA00E4BAFB /* vmem.cpp in Sources */,
 				8785F0E82438833E00CA2F31 /* insn_encode.cpp in Sources */,
 				8743B0A2242118CA00E4BAFB /* insn_decode.cpp in Sources */,
+				87A92A5025343AD50061B2E2 /* insn32_thumb_decode.cpp in Sources */,
 				8743B0A1242118CA00E4BAFB /* vsegment.cpp in Sources */,
 				8743B0942421184600E4BAFB /* main.cpp in Sources */,
 			);

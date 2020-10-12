@@ -8,23 +8,16 @@
 
 #include <iostream>
 #include "insn.hpp"
+#include "insn32_thumb.hpp"
 
 using namespace tihmstar::libinsn;
 
 int main(int argc, const char * argv[]) {
 
-    uint64_t opcode = 0xa9008801; //stp        x1, x2, [x0, #0x8]
+    insn32_thumb mcpu(0x41424344, 0x41414141);
     
-    insn test(opcode,0);
+    mcpu.type();
     
-    
-    auto a = test.type();
-    auto s =test.subtype();
-    auto c = test.classtype();
-    auto i = test.imm();
-    
-    insn t2 = insn::new_general_stp_offset(0, 8, 1, 2, 0);
-    uint32_t opcode2 = t2.opcode();
     
     printf("");
     return 0;
