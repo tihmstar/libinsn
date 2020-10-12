@@ -360,7 +360,7 @@ enum insn32::type insn32_thumb::type(){
         auto types = lookup.next_stage_decoder(_opcode);
         _type = types.type;
         _subtype = types.subtype;
-        _supertype = lookup.types.supertype;
+        _supertype = types.supertype;
     }
     
     return _type;
