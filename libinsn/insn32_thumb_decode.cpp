@@ -37,15 +37,25 @@ insn32_thumb::~insn32_thumb(){
     //
 }
 
-#pragma mark second stage decoders
 struct regtypes{
     enum insn32::type type;
     enum insn32::subtype subtype;
     enum insn32::supertype supertype;
 };
 
+typedef regtypes (*insn_type_test_func)(uint32_t);
 
-constexpr regtypes data_processing_decoder(uint32_t i){
+struct decoder_val{
+    bool isInsn;
+    union {
+        regtypes types;
+        const insn_type_test_func next_stage_decoder;
+    };
+};
+
+#pragma mark second stage decoders thumb16
+
+constexpr regtypes data_processing_decoder16(uint32_t i){
     struct decoder_stage2{
         regtypes _stage2_insn[(1<<4)]; //4bit
         constexpr decoder_stage2() : _stage2_insn{}
@@ -77,7 +87,7 @@ constexpr regtypes data_processing_decoder(uint32_t i){
     return decode_table_stage2[BIT_RANGE(i,6,9)];
 }
 
-constexpr regtypes special_instructions_decoder(uint32_t i){
+constexpr regtypes special_instructions_decoder16(uint32_t i){
     struct decoder_stage2{
         regtypes _stage2_insn[(1<<4)]; //4bit
         constexpr decoder_stage2() : _stage2_insn{}
@@ -104,7 +114,7 @@ constexpr regtypes special_instructions_decoder(uint32_t i){
     return decode_table_stage2[BIT_RANGE(i,6,9)];
 }
 
-constexpr regtypes miscellaneous_decoder(uint32_t i){
+constexpr regtypes miscellaneous_decoder16(uint32_t i){
     struct decoder_stage2{
         regtypes _stage2_insn[(1<<7)]; //7bit
         constexpr decoder_stage2() : _stage2_insn{}
@@ -177,21 +187,11 @@ constexpr regtypes miscellaneous_decoder(uint32_t i){
     return predec;
 }
     
-#pragma mark decoding unit
+#pragma mark decoding unit thumb16
 
-typedef regtypes (*insn_type_test_func)(uint32_t);
-
-struct decoder_val{
-    bool isInsn;
-    union {
-        regtypes types;
-        const insn_type_test_func next_stage_decoder;
-    };
-};
-
-struct decoder_stage1{
+struct decoder_stage1_thumb16{
     decoder_val _stage1_insn[0x100]; //8 bit
-    constexpr decoder_stage1() : _stage1_insn{}
+    constexpr decoder_stage1_thumb16() : _stage1_insn{}
     {
         //Shift (immediate), add, subtract, move, and compare on page A5-6
         {
@@ -213,12 +213,12 @@ struct decoder_stage1{
 
         //Data processing on page A5-7
         {
-            for (int i=0; i<4; i++) _stage1_insn[(0b010000 << 2) | SET_BITS(i,0)] = {false, .next_stage_decoder = data_processing_decoder};
+            for (int i=0; i<4; i++) _stage1_insn[(0b010000 << 2) | SET_BITS(i,0)] = {false, .next_stage_decoder = data_processing_decoder16};
         }
         
         //Special data instructions and branch and exchange on page A5-8
         {
-            for (int i=0; i<4; i++) _stage1_insn[(0b010001 << 2) | SET_BITS(i,0)] = {false, .next_stage_decoder = special_instructions_decoder};
+            for (int i=0; i<4; i++) _stage1_insn[(0b010001 << 2) | SET_BITS(i,0)] = {false, .next_stage_decoder = special_instructions_decoder16};
         }
         
         //Load from Literal Pool, see LDR (literal) on page A6-90
@@ -262,7 +262,7 @@ struct decoder_stage1{
         
         //Miscellaneous 16-bit instructions on page A5-10
         {
-            for (int i=0; i<0b10000; i++) _stage1_insn[(0b101100 << 2) | SET_BITS(i,0)] = {false, .next_stage_decoder = miscellaneous_decoder};
+            for (int i=0; i<0b10000; i++) _stage1_insn[(0b101100 << 2) | SET_BITS(i,0)] = {false, .next_stage_decoder = miscellaneous_decoder16};
 
         }
         
@@ -287,17 +287,37 @@ struct decoder_stage1{
         
         //Unconditional Branch, see B on page A6-40
         {
-            for (int i=0; i<0b1000; i++) _stage1_insn[(0b111000 << 2) | SET_BITS(i,0)] = {false, .next_stage_decoder = special_instructions_decoder};
+            for (int i=0; i<0b1000; i++) _stage1_insn[(0b111000 << 2) | SET_BITS(i,0)] = {true, {insn32::b,insn32::st_general, insn32::sut_branch_imm}};
         }
     };
-    constexpr decoder_val operator[](uint8_t i) const{
-        return _stage1_insn[i];
+    constexpr decoder_val operator[](uint32_t i) const{
+        return _stage1_insn[BIT_RANGE(i, 8, 15)];
     }
 };
 
-constexpr const decoder_stage1 decode_table_stage1;
+#pragma mark second stage decoders thumb32
 
 
+#pragma mark decoding unit thumb16
+
+struct decoder_stage1_thumb32{
+    decoder_val _stage1_insn[0x200]; //9 bit
+    constexpr decoder_stage1_thumb32() : _stage1_insn{}
+    {
+//        //Load/store multiple on page A5-20
+//        {
+//            for (int i=0; i<2; i++) _stage1_insn[0b010001000 | SET_BITS(i,1)] = {true, {insn32::stm,insn32::st_general, insn32::sut_memory}};
+//            for (int i=0; i<2; i++) _stage1_insn[0b010001001 | SET_BITS(i,1)] = {true, {insn32::ldm,insn32::st_general, insn32::sut_memory}};
+//        }
+#warning TODO
+    };
+    constexpr decoder_val operator[](uint32_t i) const{
+        return _stage1_insn[BIT_RANGE(i, 5, 12)];
+    }
+};
+
+constexpr const decoder_stage1_thumb16 decode_table_stage1_thumb16;
+constexpr const decoder_stage1_thumb32 decode_table_stage1_thumb32;
 
 
 #pragma mark insn type accessors
@@ -315,7 +335,7 @@ enum insn32::cputype insn32_thumb::cputype(){
 }
 
 uint8_t insn32_thumb::insnsize(){
-    return ((_opcode >> 11) > 0b11100) ? 4 : 2;
+    return (BIT_RANGE(_opcode, 11, 15) > 0b11100) ? 4 : 2;
 }
 
 
@@ -325,9 +345,13 @@ enum insn32::type insn32_thumb::type(){
     }
     
     decoder_val lookup = {};
-    uint8_t l1val = static_cast<uint8_t>(_opcode >> 24);
     
-    lookup = decode_table_stage1[l1val];
+    if (BIT_RANGE(_opcode, 11, 15) > 0b11100) {
+        lookup = decode_table_stage1_thumb32[_opcode];
+    }else{
+        lookup = decode_table_stage1_thumb16[_opcode];
+    }
+    
     if (lookup.isInsn) {
         _type = lookup.types.type;
         _subtype = lookup.types.subtype;
