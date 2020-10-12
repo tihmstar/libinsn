@@ -355,10 +355,12 @@ enum insn32::type insn32_thumb::type(){
     if (lookup.isInsn) {
         _type = lookup.types.type;
         _subtype = lookup.types.subtype;
+        _supertype = lookup.types.supertype;
     }else if (lookup.next_stage_decoder){
         auto types = lookup.next_stage_decoder(_opcode);
         _type = types.type;
         _subtype = types.subtype;
+        _supertype = lookup.types.supertype;
     }
     
     return _type;
