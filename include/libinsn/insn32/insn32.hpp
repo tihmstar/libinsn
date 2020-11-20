@@ -73,7 +73,22 @@ namespace tihmstar{
                 stm,
                 ldm,
                 b,
-                svc
+                svc,
+                stmdb,
+                strex,
+                ldrex,
+                strd,
+                ldrd,
+                strexb,
+                strexh,
+                ttb,
+                tth,
+                ldrexb,
+                ldrexh,
+                rrx,
+                orn,
+                teq,
+                
             };
             enum cputype{
                 cpu_thumb,

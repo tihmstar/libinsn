@@ -301,23 +301,176 @@ struct decoder_stage1_thumb16{
 #pragma mark decoding unit thumb16
 
 struct decoder_stage1_thumb32{
-    decoder_val _stage1_insn[0x200]; //9 bit
+#define I1(i) (i >> 16)
+#define I2(i) (i & 0xffff)
+    decoder_val _stage1_insn[(1<<9) - 0b010000000]; //9 bit but no values lower than b010000000
     constexpr decoder_stage1_thumb32() : _stage1_insn{}
     {
-//        //Load/store multiple on page A5-20
-//        {
-//            for (int i=0; i<2; i++) _stage1_insn[0b010001000 | SET_BITS(i,1)] = {true, {insn32::stm,insn32::st_general, insn32::sut_memory}};
-//            for (int i=0; i<2; i++) _stage1_insn[0b010001001 | SET_BITS(i,1)] = {true, {insn32::ldm,insn32::st_general, insn32::sut_memory}};
-//        }
+        //Load/store multiple on page A5-20
+        {
+            _stage1_insn[(0b010001000) - 0b010000000] = {true, {insn32::stm,insn32::st_general, insn32::sut_memory}};
+            
+            //possibly POP
+            _stage1_insn[(0b010001011) - 0b010000000] = {true, {insn32::ldm,insn32::st_general, insn32::sut_memory}};
+            
+            //possibly PUSH
+            _stage1_insn[(0b010010010) - 0b010000000] = {true, {insn32::stmdb,insn32::st_general, insn32::sut_memory}};
+
+            _stage1_insn[(0b010010000) - 0b010000000] = {true, {insn32::stmdb,insn32::st_general, insn32::sut_memory}};
+        }
+        
+        //Load/store dual or exclusive, table branch on page A5-21
+        {
+            _stage1_insn[(0b010000100) - 0b010000000] = {true, {insn32::strex,insn32::st_register_extended, insn32::sut_memory}};
+            _stage1_insn[(0b010000101) - 0b010000000] = {true, {insn32::ldrex,insn32::st_register_extended, insn32::sut_memory}};
+
+            for (int i=0; i<0b10; i++) _stage1_insn[(0b010000110 | SET_BITS(i, 3)) - 0b010000000] = {true, {insn32::strd,insn32::st_general, insn32::sut_memory}};
+            for (int i=0; i<0b10; i++) for (int j=0; j<0b10; j++) _stage1_insn[(0b010010100 | SET_BITS(i, 3) | SET_BITS(j, 1)) - 0b010000000] = {true, {insn32::strd,insn32::st_general, insn32::sut_memory}};
+
+            for (int i=0; i<0b10; i++) _stage1_insn[(0b010000111 | SET_BITS(i, 3)) - 0b010000000] = {true, {insn32::ldrd,insn32::st_general, insn32::sut_memory}};
+            for (int i=0; i<0b10; i++) for (int j=0; j<0b10; j++) _stage1_insn[(0b010010101 | SET_BITS(i, 3) | SET_BITS(j, 1)) - 0b010000000] = {true, {insn32::ldrd,insn32::st_general, insn32::sut_memory}};
+            
+            //possibly STREXH or undefined
+            _stage1_insn[(0b010001100) - 0b010000000] = {true, {insn32::strexb,insn32::st_register_extended, insn32::sut_memory}};
+
+            //possibly TTH or LDREXB or LDREXH or undefined
+            _stage1_insn[(0b010001101) - 0b010000000] = {true, {insn32::ttb}};
+        }
+        
+        //Data processing (shifted register) on page A5-26
+        {
+            //possibly TST or undefined
+            for (int i=0; i<0b10; i++) _stage1_insn[(0b010100000 | SET_BITS(i, 0)) - 0b010000000] = {true, {insn32::and_,insn32::st_register}};
+
+            for (int i=0; i<0b10; i++) _stage1_insn[(0b010100010 | SET_BITS(i, 0)) - 0b010000000] = {true, {insn32::bic,insn32::st_register}};
+
+            //possibly (Move register and immediate shifts)
+            for (int i=0; i<0b10; i++) _stage1_insn[(0b010100100 | SET_BITS(i, 0)) - 0b010000000] = {true, {insn32::orr,insn32::st_register}};
+
+            //possibly MVN
+            for (int i=0; i<0b10; i++) _stage1_insn[(0b010100110 | SET_BITS(i, 0)) - 0b010000000] = {true, {insn32::orn,insn32::st_register}};
+
+            //possibly TEQ or undefined
+            for (int i=0; i<0b10; i++) _stage1_insn[(0b010101000 | SET_BITS(i, 0)) - 0b010000000] = {true, {insn32::eor,insn32::st_register}};
+
+            //possibly TEQ or undefined
+            for (int i=0; i<0b10; i++) _stage1_insn[(0b010110000 | SET_BITS(i, 0)) - 0b010000000] = {true, {insn32::add,insn32::st_register}};
+
+            for (int i=0; i<0b10; i++) _stage1_insn[(0b010110100 | SET_BITS(i, 0)) - 0b010000000] = {true, {insn32::adc,insn32::st_register}};
+
+            for (int i=0; i<0b10; i++) _stage1_insn[(0b010110110 | SET_BITS(i, 0)) - 0b010000000] = {true, {insn32::sbc,insn32::st_register}};
+
+            //possibly CMP or undefined
+            for (int i=0; i<0b10; i++) _stage1_insn[(0b010111010 | SET_BITS(i, 0)) - 0b010000000] = {true, {insn32::sub,insn32::st_register}};
+
+            for (int i=0; i<0b10; i++) _stage1_insn[(0b010111100 | SET_BITS(i, 0)) - 0b010000000] = {true, {insn32::rsb,insn32::st_register}};
+        }
+        
+        //Coprocessor instructions on page A5-32
+        {
+            
+        }
 #warning TODO
     };
     constexpr decoder_val operator[](uint32_t i) const{
-        return _stage1_insn[BIT_RANGE(i, 5, 12)];
+        auto predec = _stage1_insn[BIT_RANGE(I1(i), 5, 12)];
+        
+        switch (predec.types.type) {
+            case insn32::ldm:
+                if (BIT_RANGE(I1(i), 0, 3) == 0b1101) {
+                    return {true, {insn32::pop}};
+                }
+                break;
+            case insn32::stmdb:
+                if (BIT_RANGE(I1(i), 0, 3) == 0b1101) {
+                    return {true, {insn32::push}};
+                }
+                break;
+            case insn32::strexb:
+                if (BIT_RANGE(I2(i), 4, 7) == 0b0101) {
+                    return {true, {insn32::strexh,insn32::st_register_extended, insn32::sut_memory}};
+                }else if (BIT_RANGE(I2(i), 4, 7) != 0b0100){
+                    return {true, {insn32::unknown}};
+                }
+            case insn32::ttb:
+                if (BIT_RANGE(I2(i), 4, 7) == 0b0101) {
+                    return {true, {insn32::tth}};
+                }else if (BIT_RANGE(I2(i), 4, 7) == 0b0100){
+                    return {true, {insn32::ldrexb}};
+                }else if (BIT_RANGE(I2(i), 4, 7) == 0b0101){
+                    return {true, {insn32::ldrexh}};
+                }else if (BIT_RANGE(I2(i), 4, 7) != 0b0100){
+                    return {true, {insn32::unknown}};
+                }
+            case insn32::and_:
+                if (BIT_RANGE(I2(i), 8, 11) == 0b1111) {
+                    if (BIT_AT(I1(i), 4) == 1) {
+                        return {true, {insn32::tst}};
+                    }else{
+                        return {true, {insn32::unknown}};
+                    }
+                }
+            case insn32::orr:
+                if (BIT_RANGE(I1(i), 0, 3) == 0b1111) {
+                    //(Move register and immediate shifts)
+                    switch (BIT_RANGE(I2(i), 4, 5)) {
+                        case 0b00:
+                            if (BIT_RANGE(I2(i), 12, 14) | BIT_RANGE(I2(i), 6, 7)) {
+                                return {true, {insn32::lsl,insn32::st_immediate}};
+                            }else{
+                                return {true, {insn32::mov,insn32::st_register}};
+                            }
+                        case 0b01:
+                            return {true, {insn32::lsr,insn32::st_immediate}};
+                        case 0b10:
+                            return {true, {insn32::asr,insn32::st_immediate}};
+                        case 0b11:
+                            if (BIT_RANGE(I2(i), 12, 14) | BIT_RANGE(I2(i), 6, 7)) {
+                                return {true, {insn32::ror,insn32::st_immediate}};
+                            }else{
+                                return {true, {insn32::rrx}};
+                            }
+                    }
+                }
+            case insn32::orn:
+                if (BIT_RANGE(I1(i), 0, 3) == 0b1111) {
+                    return {true, {insn32::mvn, insn32::st_register}};
+                }
+                break;
+            case insn32::eor:
+                if (BIT_RANGE(I1(i), 0, 3) == 0b1111) {
+                    if (BIT_AT(I1(i), 4) == 1) {
+                        return {true, {insn32::teq, insn32::st_register}};
+                    }else{
+                        return {true, {insn32::unknown}};
+                    }
+                }
+            case insn32::add:
+                if (BIT_RANGE(I1(i), 0, 3) == 0b1111) {
+                    if (BIT_AT(I1(i), 4) == 1) {
+                        return {true, {insn32::cmn, insn32::st_register}};
+                    }else{
+                        return {true, {insn32::unknown}};
+                    }
+                }
+            case insn32::sub:
+                if (BIT_RANGE(I1(i), 0, 3) == 0b1111) {
+                    if (BIT_AT(I1(i), 4) == 1) {
+                        return {true, {insn32::cmp, insn32::st_register}};
+                    }else{
+                        return {true, {insn32::unknown}};
+                    }
+                }
+            default:
+                return predec;
+        }
+
+        return predec;
     }
 };
 
-constexpr const decoder_stage1_thumb16 decode_table_stage1_thumb16;
-constexpr const decoder_stage1_thumb32 decode_table_stage1_thumb32;
+constexpr static const decoder_stage1_thumb16 decode_table_stage1_thumb16;
+constexpr static const decoder_stage1_thumb32 decode_table_stage1_thumb32;
 
 
 #pragma mark insn type accessors
