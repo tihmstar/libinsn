@@ -544,7 +544,7 @@ enum insn::subtype insn::subtype(){
                 return st_immediate;
             }
         case subs:
-            if (BIT_RANGE(_opcode, 21, 30) == 0x1101011001 /* register_extended */) {
+            if (BIT_RANGE(_opcode, 21, 30) == 0b1101011001 /* register_extended */) {
                 return st_register_extended;
             }else if (BIT_RANGE(_opcode, 24, 30) == 0b1101011/* register */) {
                 return st_register;
