@@ -15,23 +15,12 @@
 
 namespace tihmstar {
     class INSNexception : public tihmstar::exception{
-    public:
-        INSNexception(int code, const char *filename, const char *err ...) : tihmstar::exception(code,filename,err){}
-        
-        std::string build_commit_count() const override {
-            return VERSION_COMMIT_COUNT;
-        };
-        
-        std::string build_commit_sha() const override{
-            return VERSION_COMMIT_SHA;
-        };
+        using exception::exception;
     };
-    //custom exceptions for makeing it easy to catch
 
+//custom exceptions for makeing it easy to catch
     class out_of_range : public INSNexception{
-    public:
-        out_of_range(int code, const char * filename, const char *err...)
-            : INSNexception(code, filename, err){};
+        using INSNexception::INSNexception;
     };
 
 

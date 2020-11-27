@@ -55,38 +55,38 @@ loc_t vsegment::memmem(const void *little, size_t little_len, loc_t startLoc){
 
 insn vsegment::operator+(int i){
     if (i<0) return this->operator-(-i);
-    retcustomassure(_curpos + 4*i < _size-4, out_of_range, "overflow");
+    retcustomassure(out_of_range, _curpos + 4*i < _size-4, "overflow");
     return vsegment(*this,_vaddr+_curpos+4*i).getinsn();
 }
 
 insn vsegment::operator-(int i){
     if (i<0) return this->operator+(-i);
-    retcustomassure(_curpos >= 4*i, out_of_range, "underflow");
+    retcustomassure(out_of_range, _curpos >= 4*i, "underflow");
     return vsegment(*this,_vaddr+_curpos-4*i).getinsn();
 }
 
 insn vsegment::operator++(){
-    retcustomassure(_curpos + 4 < _size-4, out_of_range, "overflow");
+    retcustomassure(out_of_range, _curpos + 4 < _size-4, "overflow");
     _curpos+=4;
     return getinsn();
 }
 
 insn vsegment::operator--(){
-    retcustomassure(_curpos >= 4, out_of_range, "underflow");
+    retcustomassure(out_of_range, _curpos >= 4, "underflow");
     _curpos-=4;
     return getinsn();
 }
 
 vsegment &vsegment::operator+=(int i){
     if (i<0) return this->operator-=(-i);
-    retcustomassure(_curpos + 4*i < _size-4, out_of_range, "overflow");
+    retcustomassure(out_of_range, _curpos + 4*i < _size-4, "overflow");
     _curpos+=4*i;
     return *this;
 }
 
 vsegment &vsegment::operator-=(int i){
     if (i<0) return this->operator+=(-i);
-    retcustomassure(_curpos >= 4*i, out_of_range, "underflow");
+    retcustomassure(out_of_range, _curpos >= 4*i, "underflow");
     _curpos-=4*i;
     return *this;
 }
@@ -96,7 +96,7 @@ vsegment &vsegment::operator=(loc_t p){
         _curpos = 0;
     }else{
         offset_t newPos = p-_vaddr;
-        retcustomassure(newPos < _size-4 , out_of_range, "underflow");
+        retcustomassure(out_of_range, newPos < _size-4, "underflow");
         _curpos = newPos;
     }
     return *this;
@@ -116,7 +116,7 @@ uint64_t vsegment::pc() const{
 
 uint32_t vsegment::value(loc_t p) const{
     offset_t off = (p - _vaddr);
-    customassure(off < _size, out_of_range); //check for off being at least 1 byte
+    customassure(out_of_range, off < _size); //check for off being at least 1 byte
     if (off <= _size-4) {
         return *(uint32_t*)(_buf+(offset_t)(p-_vaddr));
     }
@@ -132,7 +132,7 @@ uint32_t vsegment::value(loc_t p) const{
 
 uint64_t vsegment::doublevalue(loc_t p) const{
     offset_t off = (p - _vaddr);
-    customassure(off < _size, out_of_range); //check for off being at least 1 byte
+    customassure(out_of_range, off < _size); //check for off being at least 1 byte
     if (off <= _size-8) {
         return *(uint64_t*)(_buf+(offset_t)(p-_vaddr));
     }

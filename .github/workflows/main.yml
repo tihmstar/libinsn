@@ -29,7 +29,7 @@ jobs:
          fi
       shell: bash
     - name: download dependencies
-      env: 
+      env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         get_latest_release() {
@@ -40,7 +40,7 @@ jobs:
         mkdir depdir
         cd depdir
         mkdir $BUILDROOT
-        IFS=',' read -r -a deparray <<< "$GIT_DEPENDENCIES"; for d in ${deparray[@]}; do        
+        IFS=',' read -r -a deparray <<< "$GIT_DEPENDENCIES"; for d in ${deparray[@]}; do
           echo "Got dependency: $d"
           r=$(echo $d | cut -d '/' -f 2)
           echo "Got reponame: $r"
@@ -55,7 +55,7 @@ jobs:
         cd ..
         rm -rf depdir
     - name: autogen
-      env: 
+      env:
         CC: clang
         CXX: clang++
       run: ./autogen.sh --enable-static --disable-shared
@@ -71,14 +71,14 @@ jobs:
   release:
     needs: build
     runs-on: ubuntu-latest
-    
+
     steps:
     - uses: actions/checkout@v1
     - name: Download ubuntu artifact
       uses: actions/download-artifact@v1
       with:
-        name: buildroot_ubuntu-latest   
-        path: buildroot_ubuntu-latest    
+        name: buildroot_ubuntu-latest
+        path: buildroot_ubuntu-latest
     - name: Download macos artifact
       uses: actions/download-artifact@v1
       with:
@@ -86,10 +86,10 @@ jobs:
         path: buildroot_macos-latest
     - name: Set env vars and zip
       run: |
-        echo "::set-env name=BUILD_VERSION_NUM::$(echo "$(git rev-list --count HEAD | tr -d '\n')")"
-        echo "::set-env name=BUILD_VERSION_SHA::$(echo "$(git rev-parse HEAD | tr -d '\n'])")"
-        echo "::set-env name=BUILD_VERSION_STR::$(echo "$(git rev-list --count HEAD | tr -d '\n')-$(git rev-parse HEAD | tr -d '\n'])")"
-        echo "::set-env name=COMMIT_MSG::$(echo "$(git log -1 --pretty=%B)")"
+        echo "BUILD_VERSION_NUM=$(echo "$(git rev-list --count HEAD | tr -d '\n')")" >> $GITHUB_ENV
+        echo "BUILD_VERSION_SHA=$(echo "$(git rev-parse HEAD | tr -d '\n'])")" >> $GITHUB_ENV
+        echo "BUILD_VERSION_STR=$(echo "$(git rev-list --count HEAD | tr -d '\n')-$(git rev-parse HEAD | tr -d '\n'])")" >> $GITHUB_ENV
+        echo "COMMIT_MSG=$(echo "$(git log -1 --pretty=%B)")" >> $GITHUB_ENV
         zip -r buildroot_macos-latest.zip buildroot_macos-latest
         zip -r buildroot_ubuntu-latest.zip buildroot_ubuntu-latest
     - name: Create Release
@@ -114,7 +114,7 @@ jobs:
         asset_name: buildroot_ubuntu-latest.zip
         asset_content_type: application/zip
     - name: Upload Release Asset macos
-      id: upload-release-asset-macos 
+      id: upload-release-asset-macos
       uses: actions/upload-release-asset@v1.0.1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

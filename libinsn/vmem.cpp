@@ -103,7 +103,7 @@ insn vmem::operator++(){
     } catch (tihmstar::out_of_range &e) {
         //
     }
-    retcustomassure(_segNum+1<_segments.size(), out_of_range, "overflow reached end of vmem");
+    retcustomassure(out_of_range, _segNum+1<_segments.size(), "overflow reached end of vmem");
     _segNum++;
     auto &seg = _segments.at(_segNum);
     seg = seg.base();
@@ -116,7 +116,7 @@ insn vmem::operator--(){
     } catch (tihmstar::out_of_range &e) {
         //
     }
-    retcustomassure(_segNum>0, out_of_range, "undeflow reached end of vmem");
+    retcustomassure(out_of_range, _segNum>0, "undeflow reached end of vmem");
     _segNum--;
     auto &seg = _segments.at(_segNum);
     seg = seg.base() + seg.size() - 4;
@@ -131,7 +131,7 @@ vmem &vmem::operator+=(int i){
     } catch (tihmstar::out_of_range &e) {
         //
     }
-    retcustomassure(_segNum+1<_segments.size(), out_of_range, "overflow reached end of vmem");
+    retcustomassure(out_of_range, _segNum+1<_segments.size(), "overflow reached end of vmem");
     
     auto &curSeg = _segments.at(_segNum);
     int insnLeft = ((uint64_t)curSeg.base() + curSeg.size() - curSeg.pc())/4;
@@ -149,7 +149,7 @@ vmem &vmem::operator-=(int i){
     } catch (tihmstar::out_of_range &e) {
         //
     }
-    retcustomassure(_segNum>0, out_of_range, "underflow reached end of vmem");
+    retcustomassure(out_of_range, _segNum>0, "underflow reached end of vmem");
     auto &curSeg = _segments.at(_segNum);
     int insnLeft = ((curSeg.pc() - (uint64_t)curSeg.base()))/4;
     _segNum--;
@@ -166,7 +166,7 @@ insn vmem::myop_plus(int i, uint32_t segNum){
     } catch (tihmstar::out_of_range &e) {
         //
     }
-    retcustomassure(segNum+1<_segments.size(), out_of_range, "overflow reached end of vmem");
+    retcustomassure(out_of_range, segNum+1<_segments.size(), "overflow reached end of vmem");
     
     auto &curSeg = _segments.at(segNum);
     int insnLeft = ((uint64_t)curSeg.base() + curSeg.size() - curSeg.pc())/4;
@@ -182,7 +182,7 @@ insn vmem::myop_minus(int i, uint32_t segNum){
     } catch (tihmstar::out_of_range &e) {
         //
     }
-    retcustomassure(_segNum>0, out_of_range, "underflow reached end of vmem");
+    retcustomassure(out_of_range, _segNum>0, "underflow reached end of vmem");
     auto &curSeg = _segments.at(segNum);
     int insnLeft = ((curSeg.pc() - (uint64_t)curSeg.base()))/4;
     segNum--;
@@ -218,12 +218,12 @@ vmem &vmem::operator=(loc_t pos){
 }
 
 void vmem::nextSeg(){
-    retcustomassure(_segNum+1<_segments.size(), out_of_range, "overflow reached end of vmem");
+    retcustomassure(out_of_range, _segNum+1<_segments.size(), "overflow reached end of vmem");
     _segNum++;
 }
 
 void vmem::prevSeg(){
-    retcustomassure(_segNum>0, out_of_range, "undeflow reached end of vmem");
+    retcustomassure(out_of_range, _segNum>0, "undeflow reached end of vmem");
     _segNum--;
 }
 
