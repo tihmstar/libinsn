@@ -280,6 +280,12 @@ constexpr const insn_type_test_func special_decoders_0b01111000[] = {
     NULL
 };
 
+constexpr const insn_type_test_func special_decoders_0b00111001[] = {
+    is_ldrb,
+    is_strb,
+    NULL
+};
+
 constexpr const insn_type_test_func special_decoders_0b01110010[] = {
     is_movk,
     NULL
@@ -453,6 +459,7 @@ struct decoder_stage1{
         defineDecoder(0b10001000);
         defineDecoder(0b11001000);
         defineDecoder(0b00111000);
+        defineDecoder(0b00111001);
         defineDecoder(0b10111000);
         defineDecoder(0b11111000);
         defineDecoder(0b01010010);
