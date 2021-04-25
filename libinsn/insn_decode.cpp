@@ -641,7 +641,7 @@ int64_t insn::imm(){
             reterror("can't get imm value of unknown instruction");
             break;
         case adrp:
-            return ((_pc>>12)<<12) + signExtend64(((((_opcode % (1<<24))>>5)<<2) | BIT_RANGE(_opcode, 29, 30))<<12,32);
+            return ((_pc>>12)<<12) + signExtend64((uint64_t)(((((_opcode % (1<<24))>>5)<<2) | BIT_RANGE(_opcode, 29, 30)))<<12,32);
         case adr:
             return _pc + signExtend64((BIT_RANGE(_opcode, 5, 23)<<2) | (BIT_RANGE(_opcode, 29, 30)), 21);
         case add:
