@@ -7,13 +7,15 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		8738E81F2693083800C03872 /* arm32_arm_decode.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8738E81D2693083800C03872 /* arm32_arm_decode.cpp */; };
+		8738E8202693083800C03872 /* arm32_thumb_decode.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8738E81E2693083800C03872 /* arm32_thumb_decode.cpp */; };
+		8738E8242693084E00C03872 /* arm64_encode.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8738E8222693084E00C03872 /* arm64_encode.cpp */; };
+		8738E8252693084E00C03872 /* arm64_decode.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8738E8232693084E00C03872 /* arm64_decode.cpp */; };
+		8738E9192695BCEA00C03872 /* arm32_thumb_encode.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8738E9172695BCEA00C03872 /* arm32_thumb_encode.cpp */; };
 		8743B0942421184600E4BAFB /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8743B0932421184600E4BAFB /* main.cpp */; };
 		8743B0A0242118CA00E4BAFB /* vmem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8743B09D242118CA00E4BAFB /* vmem.cpp */; };
-		8743B0A1242118CA00E4BAFB /* vsegment.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8743B09E242118CA00E4BAFB /* vsegment.cpp */; };
-		8743B0A2242118CA00E4BAFB /* insn_decode.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8743B09F242118CA00E4BAFB /* insn_decode.cpp */; };
 		8743B0A624211B8F00E4BAFB /* libgeneral.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 8743B0A524211B8F00E4BAFB /* libgeneral.0.dylib */; };
 		8743B0A724211B8F00E4BAFB /* libgeneral.0.dylib in Embed Libraries */ = {isa = PBXBuildFile; fileRef = 8743B0A524211B8F00E4BAFB /* libgeneral.0.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
-		8785F0E82438833E00CA2F31 /* insn_encode.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8785F0E72438833E00CA2F31 /* insn_encode.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -40,17 +42,23 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		8738E8182693054600C03872 /* insn.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; name = insn.hpp; path = include/libinsn/insn.hpp; sourceTree = SOURCE_ROOT; };
+		8738E81D2693083800C03872 /* arm32_arm_decode.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = arm32_arm_decode.cpp; sourceTree = "<group>"; };
+		8738E81E2693083800C03872 /* arm32_thumb_decode.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = arm32_thumb_decode.cpp; sourceTree = "<group>"; };
+		8738E8222693084E00C03872 /* arm64_encode.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = arm64_encode.cpp; sourceTree = "<group>"; };
+		8738E8232693084E00C03872 /* arm64_decode.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = arm64_decode.cpp; sourceTree = "<group>"; };
+		8738E8272693088F00C03872 /* arm32_thumb.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; name = arm32_thumb.hpp; path = include/libinsn/arm32/arm32_thumb.hpp; sourceTree = SOURCE_ROOT; };
+		8738E8282693088F00C03872 /* arm32_arm.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; name = arm32_arm.hpp; path = include/libinsn/arm32/arm32_arm.hpp; sourceTree = SOURCE_ROOT; };
+		8738E82A26930D6C00C03872 /* arm32_insn.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; name = arm32_insn.hpp; path = include/libinsn/arm32/arm32_insn.hpp; sourceTree = SOURCE_ROOT; };
+		8738E82B26930DF300C03872 /* arm32.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; name = arm32.hpp; path = include/libinsn/arm32.hpp; sourceTree = SOURCE_ROOT; };
+		8738E82C26930DF300C03872 /* arm64.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; name = arm64.hpp; path = include/libinsn/arm64.hpp; sourceTree = SOURCE_ROOT; };
+		8738E9172695BCEA00C03872 /* arm32_thumb_encode.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = arm32_thumb_encode.cpp; sourceTree = "<group>"; };
 		8743B0902421184600E4BAFB /* libinsn */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = libinsn; sourceTree = BUILT_PRODUCTS_DIR; };
 		8743B0932421184600E4BAFB /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
-		8743B09A242118C000E4BAFB /* vsegment.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; name = vsegment.hpp; path = include/libinsn/vsegment.hpp; sourceTree = SOURCE_ROOT; };
-		8743B09B242118C000E4BAFB /* insn.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; name = insn.hpp; path = include/libinsn/insn.hpp; sourceTree = SOURCE_ROOT; };
 		8743B09C242118C000E4BAFB /* vmem.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; name = vmem.hpp; path = include/libinsn/vmem.hpp; sourceTree = SOURCE_ROOT; };
 		8743B09D242118CA00E4BAFB /* vmem.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = vmem.cpp; sourceTree = "<group>"; };
-		8743B09E242118CA00E4BAFB /* vsegment.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = vsegment.cpp; sourceTree = "<group>"; };
-		8743B09F242118CA00E4BAFB /* insn_decode.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = insn_decode.cpp; sourceTree = "<group>"; };
 		8743B0A32421195100E4BAFB /* INSNexception.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; name = INSNexception.hpp; path = ../include/libinsn/INSNexception.hpp; sourceTree = "<group>"; };
 		8743B0A524211B8F00E4BAFB /* libgeneral.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libgeneral.0.dylib; path = ../../../../usr/local/lib/libgeneral.0.dylib; sourceTree = "<group>"; };
-		8785F0E72438833E00CA2F31 /* insn_encode.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = insn_encode.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -65,6 +73,28 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		8738E81C2693081D00C03872 /* arm32 */ = {
+			isa = PBXGroup;
+			children = (
+				8738E82A26930D6C00C03872 /* arm32_insn.hpp */,
+				8738E8272693088F00C03872 /* arm32_thumb.hpp */,
+				8738E81E2693083800C03872 /* arm32_thumb_decode.cpp */,
+				8738E9172695BCEA00C03872 /* arm32_thumb_encode.cpp */,
+				8738E8282693088F00C03872 /* arm32_arm.hpp */,
+				8738E81D2693083800C03872 /* arm32_arm_decode.cpp */,
+			);
+			name = arm32;
+			sourceTree = "<group>";
+		};
+		8738E8212693084100C03872 /* arm64 */ = {
+			isa = PBXGroup;
+			children = (
+				8738E8232693084E00C03872 /* arm64_decode.cpp */,
+				8738E8222693084E00C03872 /* arm64_encode.cpp */,
+			);
+			name = arm64;
+			sourceTree = "<group>";
+		};
 		8743B0872421184600E4BAFB = {
 			isa = PBXGroup;
 			children = (
@@ -86,13 +116,13 @@
 			isa = PBXGroup;
 			children = (
 				8743B0A32421195100E4BAFB /* INSNexception.hpp */,
-				8743B09B242118C000E4BAFB /* insn.hpp */,
-				8743B09F242118CA00E4BAFB /* insn_decode.cpp */,
-				8785F0E72438833E00CA2F31 /* insn_encode.cpp */,
+				8738E8182693054600C03872 /* insn.hpp */,
+				8738E82C26930DF300C03872 /* arm64.hpp */,
+				8738E8212693084100C03872 /* arm64 */,
+				8738E82B26930DF300C03872 /* arm32.hpp */,
+				8738E81C2693081D00C03872 /* arm32 */,
 				8743B09C242118C000E4BAFB /* vmem.hpp */,
 				8743B09D242118CA00E4BAFB /* vmem.cpp */,
-				8743B09A242118C000E4BAFB /* vsegment.hpp */,
-				8743B09E242118CA00E4BAFB /* vsegment.cpp */,
 				8743B0932421184600E4BAFB /* main.cpp */,
 			);
 			path = libinsn;
@@ -164,11 +194,13 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				8738E9192695BCEA00C03872 /* arm32_thumb_encode.cpp in Sources */,
+				8738E81F2693083800C03872 /* arm32_arm_decode.cpp in Sources */,
 				8743B0A0242118CA00E4BAFB /* vmem.cpp in Sources */,
-				8785F0E82438833E00CA2F31 /* insn_encode.cpp in Sources */,
-				8743B0A2242118CA00E4BAFB /* insn_decode.cpp in Sources */,
-				8743B0A1242118CA00E4BAFB /* vsegment.cpp in Sources */,
+				8738E8202693083800C03872 /* arm32_thumb_decode.cpp in Sources */,
+				8738E8242693084E00C03872 /* arm64_encode.cpp in Sources */,
 				8743B0942421184600E4BAFB /* main.cpp in Sources */,
+				8738E8252693084E00C03872 /* arm64_decode.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -287,12 +319,13 @@
 		8743B0982421184600E4BAFB /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
+				CLANG_CXX_LANGUAGE_STANDARD = "c++17";
 				CODE_SIGN_STYLE = Automatic;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"DEBUG=1",
 					"$(inherited)",
 					"EXPECTIONNAME='INSNexception'",
+					HAVE_MEMMEM,
 				);
 				HEADER_SEARCH_PATHS = (
 					"$(SRCROOT)/include",
@@ -306,7 +339,7 @@
 		8743B0992421184600E4BAFB /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
+				CLANG_CXX_LANGUAGE_STANDARD = "c++17";
 				CODE_SIGN_STYLE = Automatic;
 				HEADER_SEARCH_PATHS = (
 					"$(SRCROOT)/include",

@@ -1,11 +1,13 @@
-AM_CFLAGS = -I$(top_srcdir)/include -I$(top_srcdir)/include/libinsn $(libgeneral_CFLAGS)
-AM_LDFLAGS = -L/usr/local/lib/ $(libgeneral_LIBS)
+AM_CFLAGS = -I$(top_srcdir)/include $(libgeneral_CFLAGS)
+AM_LDFLAGS = $(libgeneral_LIBS)
 
 lib_LTLIBRARIES = libinsn.la
 
 libinsn_la_CPPFLAGS = $(AM_CFLAGS)
 libinsn_la_LIBADD = $(AM_LDFLAGS)
-libinsn_la_SOURCES = 	insn_decode.cpp \
-											insn_encode.cpp \
-											vsegment.cpp \
-											vmem.cpp
+libinsn_la_SOURCES = 	arm64_decode.cpp \
+						arm64_encode.cpp \
+						arm32_arm_decode.cpp \
+						arm32_thumb_decode.cpp \
+						arm32_thumb_encode.cpp \
+						vmem.cpp

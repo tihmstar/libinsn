@@ -8,8 +8,8 @@
 
 #include <libgeneral/macros.h>
 
-#include "insn.hpp"
-#include "INSNexception.hpp"
+#include "../include/libinsn/arm64.hpp"
+#include "../include/libinsn/INSNexception.hpp"
 
 #ifdef DEBUG
 #   include <stdint.h>
@@ -22,15 +22,17 @@ static constexpr uint64_t SET_BITS(uint64_t v, int begin) { return ((v)<<(begin)
 #   define SET_BITS(v, begin) (((v)<<(begin)))
 #endif
 
-using namespace tihmstar::libinsn;
+using namespace tihmstar::libinsn::arm64;
 
 
-insn::insn(uint32_t opcode, uint64_t pc) : _opcode(opcode), _pc(pc), _type(unknown){
+insn::insn(uint32_t opcode, uint64_t pc)
+: _opcode(opcode), _pc(pc), _type(unknown)
+{
     //
 }
 
 #pragma mark reference manual helpers
-__attribute__((always_inline)) static int64_t signExtend64(uint64_t v, int vSize){
+__attribute__((always_inline)) static uint64_t signExtend64(uint64_t v, int vSize){
     uint64_t e = (v & 1 << (vSize-1))>>(vSize-1);
     for (int i=vSize; i<64; i++)
         v |= e << i;
@@ -72,11 +74,7 @@ __attribute__((always_inline)) static uint64_t ones(uint64_t n){
 }
 
 __attribute__((always_inline)) static uint64_t ROR(uint64_t x, int shift, int len){
-    while (shift--) {
-        x |= (x & 1) << len;
-        x >>=1;
-    }
-    return x;
+    return ((x >> shift) | (x << (len - shift))) & ones(len);
 }
 
 static inline uint64_t ror(uint64_t elt, unsigned size)
@@ -121,12 +119,12 @@ __attribute__((always_inline)) static std::pair<int64_t, int64_t> DecodeBitMasks
     assure(len != -1); //reserved value
     levels = ones(len);
 
-    assure(immediate && (imms & levels) != levels); //reserved value
+    assure(!(immediate && (imms & levels) == levels)); //reserved value
 
+    uint8_t esize = 1 << len;
     uint8_t S = imms & levels;
     uint8_t R = immr & levels;
 
-    uint8_t esize = 1 << len;
 
     uint8_t diff = S - R; // 6-bit subtract with borrow
     
@@ -134,10 +132,8 @@ __attribute__((always_inline)) static std::pair<int64_t, int64_t> DecodeBitMasks
     
     uint64_t welem = ones(S + 1);
     uint64_t telem = ones(d + 1);
-    
-    uint64_t asd = ROR(welem, R, 32);
-    
-    wmask = replicate(ROR(welem, R, 32),esize);
+        
+    wmask = replicate(ROR(welem, R, esize),esize);
     tmask = replicate(telem,esize);
 #warning TODO incomplete function implementation!
     return {wmask,tmask};
@@ -147,10 +143,14 @@ __attribute__((always_inline)) static std::pair<int64_t, int64_t> DecodeBitMasks
 #pragma mark static type determinition
 
 constexpr enum insn::type is_ret(uint32_t i){
-    return (((0b11111 << 5) | i) == 0b11010110010111110000001111100000) ? insn::ret : insn::unknown;
+    return ((0b111111111111 | i) == 0b11010110010111110000111111111111) ? insn::ret : insn::unknown;
 }
 
 constexpr enum insn::type is_br_blr(uint32_t i){
+    if (BIT_RANGE(i, 25, 31) == 0b1101011 && BIT_RANGE(i, 11, 23) == 0b0011111100001) {
+        if (BIT_AT(i, 24) == 1) return BIT_AT(i, 10) == 0 ? insn::blraa : insn::blrab;
+        else if (BIT_RANGE(i, 0, 4) == 0b11111) return BIT_AT(i, 10) == 0 ? insn::blraaz : insn::blrabz;
+    }
     i = (BIT_RANGE(i | SET_BITS(1, 24), 12, 31));
     return (i == 0b11010111000111110000) ? insn::br //check for BR
         :  (i == 0b11010111001111110000) ? insn::blr : insn::unknown; //check for BLR
@@ -181,17 +181,16 @@ constexpr enum insn::type is_ldrb(uint32_t i){
            (BIT_RANGE(i, 21, 31) == 0b00111000011 && BIT_RANGE(i, 10, 11) == 0b10)/*Register*/) ? insn::ldrb : insn::unknown;
 }
 
-constexpr enum insn::type is_str(uint32_t i){
-#warning TODO redo this! currently only recognises STR (immediate)
-    return ((BIT_RANGE(i, 22, 29) == 0b11100100) && (i >> 31)) ? insn::str : insn::unknown;
+constexpr enum insn::type is_strb(uint32_t i){
+    return (BIT_RANGE(i, 21, 31) == 0b00111000000 || //Immediate post/pre -indexed
+           BIT_RANGE(i, 22, 31) == 0b0011100100  || //Immediate unsigned offset
+           (BIT_RANGE(i, 21, 31) == 0b00111000001 && BIT_RANGE(i, 10, 11) == 0b10)/*Register*/) ? insn::strb : insn::unknown;
 }
 
-constexpr enum insn::type is_strb(uint32_t i){
-    return (((BIT_RANGE(i, 21, 31) == 0b00111000001) && (BIT_RANGE(i, 10, 11) == 0b10) /* register*/)
-        /* immediate */
-        || ((BIT_RANGE(i, 21, 31) == 0b00111000000)
-                && ((BIT_RANGE(i, 10, 11) == 0b01) || (BIT_RANGE(i, 10, 11) == 0b11)))
-        || (BIT_RANGE(i, 22, 31) == 0b0011100100) /* unsigned offset */) ? insn::strb : insn::unknown;
+constexpr enum insn::type is_str(uint32_t i){
+    if ((BIT_RANGE(i, 22, 29) == 0b11100100) && (i >> 31)) return insn::str; //immediate
+    if (BIT_RANGE(i | SET_BITS(1, 30), 21, 31) == 0b11111000001 && BIT_RANGE(i, 10, 11) == 0b10) return insn::str; //register
+    return insn::unknown;
 }
 
 constexpr enum insn::type is_stp(uint32_t i){
@@ -238,12 +237,36 @@ constexpr enum insn::type is_madd(uint32_t i){
     return ((BIT_RANGE(i, 21, 30) == 0b0011011000) && (BIT_AT(i, 15) == 0)) ? insn::madd : insn::unknown;
 }
 
+constexpr enum insn::type is_autda(uint32_t i){
+    return (BIT_RANGE(i, 10, 31) == 0b1101101011000001000110 /*autda*/) ? insn::autda : insn::unknown;
+}
+
+constexpr enum insn::type is_autdza(uint32_t i){
+    return (BIT_RANGE(i, 5, 31) == 0b110110101100000100111011111 /*autdza*/) ? insn::autdza : insn::unknown;
+}
+
 constexpr enum insn::type is_pacib_int(uint32_t i){
     return (BIT_RANGE(i, 10, 31) == 0b1101101011000001000001 /*pacib*/) ? insn::pacib : insn::unknown;
 }
 
 constexpr enum insn::type is_pacizb_int(uint32_t i){
     return (BIT_RANGE(i, 10, 31) == 0b1101101011000001000001 /*pacizb*/) ? insn::pacizb : insn::unknown;
+}
+
+constexpr enum insn::type is_pacda(uint32_t i){
+    return (BIT_RANGE(i, 10, 31) == 0b1101101011000001000110 /*pacda*/) ? insn::pacda : insn::unknown;
+}
+
+constexpr enum insn::type is_pacdza(uint32_t i){
+    return (BIT_RANGE(i, 5, 31) == 0b110110101100000100111011111 /*pacda*/) ? insn::pacdza : insn::unknown;
+}
+
+constexpr enum insn::type is_xpacd(uint32_t i){
+    return (BIT_RANGE(i, 5, 31) == 0b110110101100000101000111111 /*xpacd*/) ? insn::xpacd : insn::unknown;
+}
+
+constexpr enum insn::type is_xpaci(uint32_t i){
+    return (BIT_RANGE(i, 5, 31) == 0b110110101100000101000011111 /*xpaci*/) ? insn::xpaci : insn::unknown;
 }
 
 constexpr enum insn::type is_pacibsp(uint32_t i){
@@ -255,6 +278,10 @@ constexpr enum insn::type is_ldr(uint32_t i){
             (BIT_RANGE(i | SET_BITS(1, 23), 22, 29) == 0b11110111)/*SIMD LDR*/
             || (BIT_RANGE(i | SET_BITS(1, 30), 22, 31) == 0b1111100101)
             ) ? insn::ldr : insn::unknown;
+}
+
+constexpr enum insn::type is_lsl(uint32_t i){
+    return (BIT_RANGE(i, 23, 30) == 0b10100110) ? insn::lsl : insn::unknown;
 }
 
 
@@ -275,7 +302,18 @@ constexpr const insn_type_test_func special_decoders_0b11010110[] = {
     NULL
 };
 
+constexpr const insn_type_test_func special_decoders_0b11010111[] = {
+    is_br_blr,
+    NULL
+};
+
+
 constexpr const insn_type_test_func special_decoders_0b01111000[] = {
+    is_ldrh,
+    NULL
+};
+
+constexpr const insn_type_test_func special_decoders_0b01111001[] = {
     is_ldrh,
     NULL
 };
@@ -396,18 +434,36 @@ constexpr const insn_type_test_func special_decoders_0b10011011[] = {
 };
 
 constexpr const insn_type_test_func special_decoders_0b11011010[] = {
+    is_autda,
+    is_autdza,
     is_pacib_int,
     is_pacizb_int,
+    is_pacda,
+    is_pacdza,
+    is_xpacd,
+    is_xpaci,
     NULL
 };
 
 constexpr const insn_type_test_func special_decoders_0b11111001[] = {
     is_ldr,
+    is_str,
     NULL
 };
 
 constexpr const insn_type_test_func special_decoders_0b10111001[] = {
     is_ldr,
+    is_str,
+    NULL
+};
+
+constexpr const insn_type_test_func special_decoders_0b01010011[] = {
+    is_lsl,
+    NULL
+};
+
+constexpr const insn_type_test_func special_decoders_0b11010011[] = {
+    is_lsl,
     NULL
 };
 
@@ -436,7 +492,8 @@ struct decoder_stage1{
         for (int i=0; i<2; i++) _stage1_insn[0b00110110 | SET_BITS(i,7)] = {true, insn::tbz};
         for (int i=0; i<4; i++) _stage1_insn[0b00010100 | SET_BITS(i,0)] = {true, insn::b};
         for (int i=0; i<2; i++) _stage1_insn[0b00101010 | SET_BITS(i,7)] = {true, insn::mov};
-        for (int i=0; i<2; i++) _stage1_insn[0b01110001 | SET_BITS(i,7)] = {true, insn::subs};
+        for (int i=0; i<2; i++) _stage1_insn[0b01110001 | SET_BITS(i,7)] = {true, insn::subs}; //immediate
+        for (int i=0; i<2; i++) _stage1_insn[0b01101011 | SET_BITS(i,7)] = {true, insn::subs}; //shifted register
 
         for (int i=0; i<2; i++) _stage1_insn[0b00010001 | SET_BITS(i,7)] = {true, insn::add}; //imediate
         for (int i=0; i<2; i++) _stage1_insn[0b00001011 | SET_BITS(i,7)] = {true, insn::add}; //register
@@ -445,12 +502,16 @@ struct decoder_stage1{
 
         for (int i=0; i<2; i++) _stage1_insn[0b00011000 | SET_BITS(i,6)] = {true, insn::ldr}; //literal
 
-
         for (int i=0; i<4; i++) _stage1_insn[0b00101000 | SET_BITS(i & 1,7) | SET_BITS(i >> 1,0)] = {false, .next_stage_decoder = special_decoders_stp_ldp};
 
+
 #define defineDecoder(binaryByte) _stage1_insn[binaryByte] = {false, .next_stage_decoder = special_decoders_##binaryByte};
-            
+        
+        defineDecoder(0b01111001);//unchecked
+        defineDecoder(0b00111001);//unchecked
+        
         defineDecoder(0b11010110);
+        defineDecoder(0b11010111);
         defineDecoder(0b01111000);
         defineDecoder(0b01110010);
         defineDecoder(0b11110010);
@@ -459,7 +520,6 @@ struct decoder_stage1{
         defineDecoder(0b10001000);
         defineDecoder(0b11001000);
         defineDecoder(0b00111000);
-        defineDecoder(0b00111001);
         defineDecoder(0b10111000);
         defineDecoder(0b11111000);
         defineDecoder(0b01010010);
@@ -477,11 +537,29 @@ struct decoder_stage1{
         defineDecoder(0b11011010);
         defineDecoder(0b11111001);
         defineDecoder(0b10111001);
-            
+
+        defineDecoder(0b01010011);
+        defineDecoder(0b11010011);
+
 #undef defineDecoder
     };
-    constexpr decoder_val operator[](uint8_t i) const{
-        return _stage1_insn[i];
+    constexpr decoder_val operator[](uint32_t i) const{
+        uint8_t l1val = static_cast<uint8_t>(i >> 24);
+        decoder_val dec = _stage1_insn[l1val];
+        if (dec.isInsn) {
+            switch (dec.type) {
+                case insn::subs:
+                    //subs and cmp is the same thing, but mnemonic cmp is prefered when rd=0b11111
+                    if (BIT_RANGE(i, 0, 4) == 0b11111){
+                        return {true, insn::cmp};
+                    }
+                    break;
+                    
+                default:
+                    break;
+            }
+        }
+        return dec;
     }
 };
 
@@ -504,9 +582,8 @@ enum insn::type insn::type(){
     }
     
     decoder_val lookup = {};
-    uint8_t l1val = static_cast<uint8_t>(_opcode >> 24);
     
-    lookup = decode_table_stage1[l1val];
+    lookup = decode_table_stage1[_opcode];
     if (lookup.isInsn) {
         _type = lookup.type;
     }else if (lookup.next_stage_decoder){
@@ -545,7 +622,8 @@ enum insn::subtype insn::subtype(){
                 return st_immediate;
             break;
         case strb:
-            if ((BIT_RANGE(_opcode, 21, 31) == 0b00111000001) && (BIT_RANGE(_opcode, 10, 11) == 0b10) /* register*/) {
+        case str:
+            if ((BIT_RANGE(_opcode, 21, 29) == 0b111000001) && (BIT_RANGE(_opcode, 10, 11) == 0b10) /* register*/) {
                 return st_register;
             }else{
                 return st_immediate;
@@ -582,6 +660,7 @@ enum insn::supertype insn::supertype(){
         case cbz:
         case cbnz:
         case tbnz:
+        case tbz:
         case bcond:
         case b:
             return sut_branch_imm;
@@ -641,7 +720,7 @@ int64_t insn::imm(){
             reterror("can't get imm value of unknown instruction");
             break;
         case adrp:
-            return ((_pc>>12)<<12) + signExtend64((uint64_t)(((((_opcode % (1<<24))>>5)<<2) | BIT_RANGE(_opcode, 29, 30)))<<12,32);
+            return ((_pc>>12)<<12) + signExtend64(((((_opcode % (1<<24))>>5)<<2) | BIT_RANGE(_opcode, 29, 30))<<12,32);
         case adr:
             return _pc + signExtend64((BIT_RANGE(_opcode, 5, 23)<<2) | (BIT_RANGE(_opcode, 29, 30)), 21);
         case add:
@@ -655,76 +734,51 @@ int64_t insn::imm(){
         case bcond:
             return _pc + (signExtend64(BIT_RANGE(_opcode, 5, 23), 19)<<2); //untested
         case tbnz:
-            return _pc + (signExtend64(BIT_RANGE(_opcode, 5, 18), 13)<<2); //untested
+        case tbz:
+            return _pc + (signExtend64(BIT_RANGE(_opcode, 5, 18), 13)<<2);
         case movk:
         case movz:
             return ((uint64_t)BIT_RANGE(_opcode, 5, 20)) << (BIT_RANGE(_opcode, 21, 22) * 16);
         case ldr:
-            if(subtype() == st_immediate){
-                if ((BIT_RANGE(_opcode | SET_BITS(1, 30), 22, 31) == 0b1111100101))
-                    return BIT_RANGE(_opcode, 10, 21) << BIT_RANGE(_opcode, 30, 31); //unsigned offset
-                
-                if(BIT_RANGE(_opcode, 24, 25)){
-                    // Unsigned Offset
-                    return BIT_RANGE(_opcode, 10, 21) << (_opcode>>30);
-                }else{
-                    // Signed Offset
-                    return signExtend64(BIT_RANGE(_opcode, 12, 21), 9); //untested
-                }
-            }else if(subtype() == st_literal){
-                return BIT_RANGE(_opcode, 5, 23) << 2;
-            }else{
-                reterror("can't get imm value of ldr that has non immediate subtype");
-            }
-        case strb:
-            if(subtype() != st_immediate){
-                reterror("can't get imm value of ldr that has non immediate subtype");
-                break;
-            }
-            if ((BIT_RANGE(_opcode, 22, 31) == 0b0011100100) /* unsigned offset */) {
-                return BIT_RANGE(_opcode, 12, 20);
-            }else{
-                return BIT_RANGE(_opcode, 10, 21);
-            }
+        case str:
         case ldrh:
-            if(subtype() != st_immediate){
-                reterror("can't get imm value of ldr that has non immediate subtype");
-                break;
-            }
-            if (((BIT_RANGE(_opcode, 21, 31) == 0b01111000010)
-                 && ((BIT_RANGE(_opcode, 10, 11) == 0b01) /* imm post-index*/ || (BIT_RANGE(_opcode, 10, 11) == 0b11) /* imm pre-index*/ ))){
-                return BIT_RANGE(_opcode, 12, 20);
-            }else{
-                return BIT_RANGE(_opcode, 10, 21) << BIT_RANGE(_opcode, 30, 31);
-            }
+        case strh:
+        case strb:
         case ldrb:
             if (st_immediate) {
-                if (BIT_RANGE(_opcode, 22, 31) == 0b0011100101) { //unsigned
+                if (BIT_RANGE(_opcode | SET_BITS(1, 22), 22, 29) == 0b11100101) { //unsigned
                     return BIT_RANGE(_opcode, 10, 21) << BIT_RANGE(_opcode, 30, 31);
                 }else{  //pre/post indexed
                     return BIT_RANGE(_opcode, 12, 20) << BIT_RANGE(_opcode, 30, 31);
                 }
             }else{
-                reterror("ldrb must be st_immediate for imm to be defined!");
+                reterror("needs st_immediate for imm to be defined!");
             }
-        case str:
-#warning TODO rewrite this! currently only unsigned offset supported
-            // Unsigned Offset
-            return BIT_RANGE(_opcode, 10, 21) << (_opcode>>30);
         case orr:
         case and_:
         {
-            int64_t val = DecodeBitMasks(BIT_AT(_opcode, 22),BIT_RANGE(_opcode, 10, 15),BIT_RANGE(_opcode, 16,21), true).first;
+            auto bm = DecodeBitMasks(BIT_AT(_opcode, 22),BIT_RANGE(_opcode, 10, 15),BIT_RANGE(_opcode, 16,21), true);
+            int64_t val = bm.first;
             if (!BIT_AT(_opcode, 31))
                 val = val & 0xffffffff;
             return val;
         }
-        case tbz:
-            return BIT_RANGE(_opcode, 5, 18);
         case stp:
+        case ldp:
             return signExtend64(BIT_RANGE(_opcode, 15, 21),7) << (2+(_opcode>>31));
         case b:
-            return _pc + ((_opcode % (1<< 26))<<2);
+            return _pc + signExtend64(((_opcode % (1<< 26))<<2),26);
+        case lsl:
+            retassure(BIT_AT(_opcode, 31) == BIT_AT(_opcode, 22), "unexpected encoding!");
+
+        {
+            int16_t immr = BIT_RANGE(_opcode, 16, 21);
+            if (BIT_AT(_opcode, 31)) {
+                return 64-immr;
+            }else{
+                return 32-immr;
+            }
+        }
         default:
             reterror("failed to get imm value");
             break;
@@ -750,6 +804,13 @@ uint8_t insn::rd(){
         case csel:
         case pacib:
         case pacizb:
+        case lsl:
+        case pacda:
+        case pacdza:
+        case xpacd:
+        case xpaci:
+        case autda:
+        case autdza:
             return (_opcode % (1<<5));
 
         default:
@@ -777,11 +838,19 @@ uint8_t insn::rn(){
         case ldr:
         case ldrh:
         case stp:
+        case ldp:
         case csel:
         case mov:
         case ccmp:
         case pacib:
         case pacizb:
+        case pacda:
+        case autda:
+        case lsl:
+        case blraa:
+        case blrab:
+        case blraaz:
+        case blrabz:
             return BIT_RANGE(_opcode, 5, 9);
 
         default:
@@ -806,6 +875,7 @@ uint8_t insn::rt(){
         case ldr:
         case ldrh:
         case stp:
+        case ldp:
         case mrs:
         case msr:
             return (_opcode % (1<<5));
@@ -819,6 +889,7 @@ uint8_t insn::rt(){
 uint8_t insn::rt2(){
     switch (type()) {
         case stp:
+        case ldp:
             return BIT_RANGE(_opcode, 10, 14);
 
         default:
@@ -838,6 +909,10 @@ uint8_t insn::rm(){
             
         case br:
         case blr:
+        case blraa:
+        case blrab:
+        case blraaz:
+        case blrabz:
             retassure(pactype() != pac_none, "wrong pactype");
             return BIT_RANGE(_opcode, 0, 4);
             
@@ -853,7 +928,9 @@ insn::cond insn::condition(){
         case ccmp:
             ret = BIT_RANGE(_opcode, 12, 15);
             break;
-            
+        case bcond:
+            ret = BIT_RANGE(_opcode, 0, 3);
+            break;
         default:
             reterror("failed to get condition");
             break;

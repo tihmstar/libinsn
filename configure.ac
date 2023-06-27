@@ -24,22 +24,40 @@ case $host_os in
   darwin* )
         CXXFLAGS+=" -stdlib=libc++ "
         ;;
+  *mingw32*|*cygwin*)
+  AC_MSG_RESULT([${host_os}])
+  win32=true
+  LDFLAGS+=" -no-undefined"
+      ;;
 esac
 
-
-CXXFLAGS+=" -std=c++14 -O3 -fPIC"
+CXXFLAGS+=" -std=c++17 -O3 -fPIC"
 CFLAGS+=" -std=c11 -fPIC"
 CXXFLAGS+=" -D EXPECTIONNAME=INSNexception"
 
 # Checks for libraries.
-LIBGENERAL_REQUIRES_STR="libgeneral >= 41"
+LIBGENERAL_REQUIRES_STR="libgeneral >= 49"
 PKG_CHECK_MODULES(libgeneral, $LIBGENERAL_REQUIRES_STR)
 
 AC_SUBST([libgeneral_requires], [$LIBGENERAL_REQUIRES_STR])
 
+AC_ARG_ENABLE([debug],
+            [AS_HELP_STRING([--enable-debug],
+            [enable debug build(default is no)])],
+            [debug_build=true],
+            [debug_build=false])
+
+if test "$debug_build" = true; then
+  echo "*** Note: debug build requested ***"
+  CFLAGS+=" -g -O0 -DDEBUG=1"
+  CXXFLAGS+=" -g -O0 -DDEBUG=1"
+fi
 
 # Checks for header files.
 AC_CHECK_HEADERS([fcntl.h stdint.h stdlib.h string.h unistd.h])
+
+# Check for functions
+AC_CHECK_FUNCS([memmem])
 
 LT_INIT
 
