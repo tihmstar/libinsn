@@ -274,6 +274,11 @@ constexpr enum insn::type is_pacibsp(uint32_t i){
 }
 
 constexpr enum insn::type is_ldr(uint32_t i){
+    if (((BIT_RANGE(i, 22, 29) == 0b11100001) && BIT_AT(i, 10) && BIT_AT(i, 31))
+        || (BIT_RANGE(i, 22, 29) == 0b11100101 && BIT_AT(i, 31))) return insn::ldr; //immediate
+
+    if (BIT_RANGE(i | SET_BITS(1, 30), 21, 31) == 0b11111000011 && BIT_RANGE(i, 10, 11) == 0b10) return insn::ldr; //register
+
     return (
             (BIT_RANGE(i | SET_BITS(1, 23), 22, 29) == 0b11110111)/*SIMD LDR*/
             || (BIT_RANGE(i | SET_BITS(1, 30), 22, 31) == 0b1111100101)
@@ -362,11 +367,13 @@ constexpr const insn_type_test_func special_decoders_0b00111000[] = {
 
 constexpr const insn_type_test_func special_decoders_0b10111000[] = {
     is_str,
+    is_ldr,
     NULL
 };
 
 constexpr const insn_type_test_func special_decoders_0b11111000[] = {
     is_str,
+    is_ldr,
     NULL
 };
 
@@ -749,7 +756,7 @@ int64_t insn::imm(){
                 if (BIT_RANGE(_opcode | SET_BITS(1, 22), 22, 29) == 0b11100101) { //unsigned
                     return BIT_RANGE(_opcode, 10, 21) << BIT_RANGE(_opcode, 30, 31);
                 }else{  //pre/post indexed
-                    return BIT_RANGE(_opcode, 12, 20) << BIT_RANGE(_opcode, 30, 31);
+                    return BIT_RANGE(_opcode, 12, 20);
                 }
             }else{
                 reterror("needs st_immediate for imm to be defined!");
