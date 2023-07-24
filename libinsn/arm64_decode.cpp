@@ -606,6 +606,12 @@ enum insn::type insn::type(){
 
 enum insn::subtype insn::subtype(){
     switch (type()) {
+        case add:
+            if (BIT_RANGE(_opcode, 24, 28) == 0b10001) {
+                return st_immediate;
+            }else{
+                return st_register;
+            }
         case ldrh:
             if (((BIT_RANGE(_opcode, 21, 31) == 0b01000011) && (BIT_RANGE(_opcode, 10, 11) == 0b10))) {
                 return st_register;

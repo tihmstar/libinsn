@@ -13,7 +13,7 @@
 using namespace tihmstar::libinsn;
 
 int main(int argc, const char * argv[]) {    
-    uint64_t opcode = 0xF8428D50;
+    uint64_t opcode = 0x91190101;
     arm64::insn test(opcode,0xfffffff0084aa6dc);
     
 //    arm32::arm test(0xE92D40F0,0x803b65c0);
@@ -24,7 +24,7 @@ int main(int argc, const char * argv[]) {
     printf("0x%08x\n",otest.opcode());
 
     auto a = test.type();
-//    auto s = test.subtype();
+    auto s = test.subtype();
 //    auto rn = test.rn();
 //    auto rt = test.rd();
 //    auto rd = test.condition();
