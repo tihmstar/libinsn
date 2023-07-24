@@ -38,7 +38,7 @@ namespace tihmstar{
                 size_t size;
                 uint64_t vaddr;
                 vmprot perms;
-                char segname[0];
+                char segname[1];
             };
 
             uint32_t _segNum;
@@ -83,6 +83,7 @@ namespace tihmstar{
             void nextSeg();
             void prevSeg();
             size_t curSegSize();
+            std::vector<vsegment> getSegments() const;
             
             //iterator operator
             insn operator+(int i);

@@ -7,6 +7,8 @@
 //
 
 #include "../include/libinsn/arm32/arm32_arm.hpp"
+#include "../include/libinsn/INSNexception.hpp"
+#include <libgeneral/macros.h>
 
 #ifdef DEBUG
 #   include <stdint.h>
@@ -315,29 +317,29 @@ constexpr regtypes load_store_word_unsigned_byte_A0_decoder(uint32_t i){
         regtypes _stage2_insn[(1<<6)]; //6bit
         constexpr decoder_stage2() : _stage2_insn{}
         {
-            for (int i=0; i<0b10; i++) for (int j=0; j<0b100; j++) _stage2_insn[0b000000 | SET_BITS(j,3) | SET_BITS(i,1)] = {arm32::str,arm32::st_immediate,arm32::sut_memory};
-            for (int i=0; i<0b10; i++) for (int j=0; j<0b100; j++) _stage2_insn[0b000001 | SET_BITS(j,3) | SET_BITS(i,1)] = {arm32::str,arm32::st_immediate,arm32::sut_memory};
+            for (int i=0; i<0b10; i++) for (int j=0; j<0b100; j++) _stage2_insn[0b000000 | (SET_BITS(j,3) | SET_BITS(i,1)) << 1] = {arm32::str,arm32::st_immediate,arm32::sut_memory};
+            for (int i=0; i<0b10; i++) for (int j=0; j<0b100; j++) _stage2_insn[0b000001 | (SET_BITS(j,3) | SET_BITS(i,1)) << 1] = {arm32::str,arm32::st_immediate,arm32::sut_memory};
             //overwrites previous encoding!
-            for (int i=0; i<0b10; i++) _stage2_insn[0b000100 | SET_BITS(i,4)] = {arm32::strt,arm32::st_general,arm32::sut_memory};
-            for (int i=0; i<0b10; i++) _stage2_insn[0b000101 | SET_BITS(i,4)] = {arm32::strt,arm32::st_general,arm32::sut_memory};
+            for (int i=0; i<0b10; i++) _stage2_insn[0b000100 | (SET_BITS(i,4)) << 1] = {arm32::strt,arm32::st_general,arm32::sut_memory};
+            for (int i=0; i<0b10; i++) _stage2_insn[0b000101 | (SET_BITS(i,4)) << 1] = {arm32::strt,arm32::st_general,arm32::sut_memory};
             
-            for (int i=0; i<0b10; i++) for (int j=0; j<0b100; j++) _stage2_insn[0b000010 | SET_BITS(j,3) | SET_BITS(i,1)] = {arm32::ldr,arm32::st_immediate,arm32::sut_memory};
-            for (int i=0; i<0b10; i++) for (int j=0; j<0b100; j++) _stage2_insn[0b000011 | SET_BITS(j,3) | SET_BITS(i,1)] = {arm32::ldr,arm32::st_literal,arm32::sut_memory};
+            for (int i=0; i<0b10; i++) for (int j=0; j<0b100; j++) _stage2_insn[0b000010 | (SET_BITS(j,3) | SET_BITS(i,1)) << 1] = {arm32::ldr,arm32::st_immediate,arm32::sut_memory};
+            for (int i=0; i<0b10; i++) for (int j=0; j<0b100; j++) _stage2_insn[0b000011 | (SET_BITS(j,3) | SET_BITS(i,1)) << 1] = {arm32::ldr,arm32::st_literal,arm32::sut_memory};
             //overwrites previous encoding!
-            for (int i=0; i<0b10; i++) _stage2_insn[0b000110 | SET_BITS(i,4)] = {arm32::ldrt,arm32::st_general,arm32::sut_memory};
-            for (int i=0; i<0b10; i++) _stage2_insn[0b000111 | SET_BITS(i,4)] = {arm32::ldrt,arm32::st_general,arm32::sut_memory};
+            for (int i=0; i<0b10; i++) _stage2_insn[0b000110 | (SET_BITS(i,4)) << 1] = {arm32::ldrt,arm32::st_general,arm32::sut_memory};
+            for (int i=0; i<0b10; i++) _stage2_insn[0b000111 | (SET_BITS(i,4)) << 1] = {arm32::ldrt,arm32::st_general,arm32::sut_memory};
 
-            for (int i=0; i<0b10; i++) for (int j=0; j<0b100; j++) _stage2_insn[0b001000 | SET_BITS(j,3) | SET_BITS(i,1)] = {arm32::strb,arm32::st_immediate,arm32::sut_memory};
-            for (int i=0; i<0b10; i++) for (int j=0; j<0b100; j++) _stage2_insn[0b001001 | SET_BITS(j,3) | SET_BITS(i,1)] = {arm32::strb,arm32::st_immediate,arm32::sut_memory};
+            for (int i=0; i<0b10; i++) for (int j=0; j<0b100; j++) _stage2_insn[0b001000 | (SET_BITS(j,3) | SET_BITS(i,1)) << 1] = {arm32::strb,arm32::st_immediate,arm32::sut_memory};
+            for (int i=0; i<0b10; i++) for (int j=0; j<0b100; j++) _stage2_insn[0b001001 | (SET_BITS(j,3) | SET_BITS(i,1)) << 1] = {arm32::strb,arm32::st_immediate,arm32::sut_memory};
             //overwrites previous encoding!
-            for (int i=0; i<0b10; i++) _stage2_insn[0b001100 | SET_BITS(i,4)] = {arm32::strbt,arm32::st_general,arm32::sut_memory};
-            for (int i=0; i<0b10; i++) _stage2_insn[0b001101 | SET_BITS(i,4)] = {arm32::strbt,arm32::st_general,arm32::sut_memory};
+            for (int i=0; i<0b10; i++) _stage2_insn[0b001100 | (SET_BITS(i,4)) << 1] = {arm32::strbt,arm32::st_general,arm32::sut_memory};
+            for (int i=0; i<0b10; i++) _stage2_insn[0b001101 | (SET_BITS(i,4)) << 1] = {arm32::strbt,arm32::st_general,arm32::sut_memory};
 
-            for (int i=0; i<0b10; i++) for (int j=0; j<0b100; j++) _stage2_insn[0b001010 | SET_BITS(j,3) | SET_BITS(i,1)] = {arm32::ldrb,arm32::st_immediate,arm32::sut_memory};
-            for (int i=0; i<0b10; i++) for (int j=0; j<0b100; j++) _stage2_insn[0b001011 | SET_BITS(j,3) | SET_BITS(i,1)] = {arm32::ldrb,arm32::st_literal,arm32::sut_memory};
+            for (int i=0; i<0b10; i++) for (int j=0; j<0b100; j++) _stage2_insn[0b001010 | (SET_BITS(j,3) | SET_BITS(i,1)) << 1] = {arm32::ldrb,arm32::st_immediate,arm32::sut_memory};
+            for (int i=0; i<0b10; i++) for (int j=0; j<0b100; j++) _stage2_insn[0b001011 | (SET_BITS(j,3) | SET_BITS(i,1)) << 1] = {arm32::ldrb,arm32::st_literal,arm32::sut_memory};
             //overwrites previous encoding!
-            for (int i=0; i<0b10; i++) _stage2_insn[0b001110 | SET_BITS(i,4)] = {arm32::ldrbt,arm32::st_general,arm32::sut_memory};
-            for (int i=0; i<0b10; i++) _stage2_insn[0b001111 | SET_BITS(i,4)] = {arm32::ldrbt,arm32::st_general,arm32::sut_memory};
+            for (int i=0; i<0b10; i++) _stage2_insn[0b001110 | (SET_BITS(i,4)) << 1] = {arm32::ldrbt,arm32::st_general,arm32::sut_memory};
+            for (int i=0; i<0b10; i++) _stage2_insn[0b001111 | (SET_BITS(i,4)) << 1] = {arm32::ldrbt,arm32::st_general,arm32::sut_memory};
         }
         constexpr regtypes operator[](uint16_t i) const{
             return _stage2_insn[i];
@@ -609,13 +611,13 @@ constexpr regtypes b_bl_and_block_data_transfer_decoder(uint32_t i){
     
     switch (predec.type){
         case arm32::stmdb:
-            if (BIT_RANGE(i, 16, 19) == 0b1111) {
-                return {arm32::push};
+            if (BIT_RANGE(i, 16, 19) == 0b1101 && BIT_AT(i, 21)) {
+                predec.type = push;
             }
             break;
         case arm32::ldmia:
-            if (BIT_RANGE(i, 16, 19) == 0b1111) {
-                return {arm32::pop};
+            if (BIT_RANGE(i, 16, 19) == 0b1101 && BIT_AT(i, 21)) {
+                predec.type = pop;
             }
             break;
 
@@ -880,6 +882,118 @@ enum arm32::subtype arm::subtype(){
 
 enum arm32::supertype arm::supertype(){
     return _supertype;
+}
+
+int32_t arm::imm(){
+    switch (type()) {
+        case unknown:
+            reterror("can't get imm value of unknown instruction");
+            break;
+        case ldr:
+            if (subtype() == st_literal) {
+                if (BIT_AT(_opcode, 23)) {
+                    return _pc + 8 + BIT_RANGE(_opcode, 0, 11);
+                }else{
+                    return _pc + 8 - BIT_RANGE(_opcode, 0, 11);
+                }
+            }else{
+                reterror("todo");
+            }
+        case mov:
+            if (BIT_RANGE(_opcode, 20, 27) == 0b00110000) {
+                //A2 encoding
+                return BIT_RANGE(_opcode, 0, 11) | BIT_RANGE(_opcode, 16, 19)<<11;
+            }else{
+                //A1 encoding
+                return BIT_RANGE(_opcode, 0, 11);
+            }
+        case movt:
+            return BIT_RANGE(_opcode, 0, 11);
+
+        default:
+            reterror("failed to get imm value");
+            break;
+    }
+}
+
+uint8_t arm::rd(){
+    switch (type()) {
+        case unknown:
+            reterror("can't get rd value of unknown instruction");
+            break;
+        case add:
+        case mov:
+        case movt:
+            return BIT_RANGE(_opcode, 12, 15);
+        default:
+            reterror("failed to get rd value");
+            break;
+    }
+}
+
+uint8_t arm::rn(){
+    switch (type()) {
+        case unknown:
+            reterror("can't get rn value of unknown instruction");
+            break;
+        case add:
+            return BIT_RANGE(_opcode, 16, 19);
+        default:
+            reterror("failed to get rn value");
+            break;
+    }
+}
+
+uint8_t arm::rt(){
+    switch (type()) {
+        case unknown:
+            reterror("can't get rt value of unknown instruction");
+            break;
+        case ldr:
+            if (subtype() == st_literal) {
+                return BIT_RANGE(_opcode, 12, 15);
+            }else{
+                reterror("todo");
+            }
+        default:
+            reterror("failed to get rt value");
+            break;
+    }
+}
+
+uint8_t arm::rm(){
+    switch (type()) {
+        case unknown:
+            reterror("can't get rm value of unknown instruction");
+            break;
+        case add:
+            return BIT_RANGE(_opcode, 0, 3);
+        default:
+            reterror("failed to get rm value");
+            break;
+    }
+}
+
+register_list arm::reglist(){
+    switch (type()) {
+        case unknown:
+            reterror("can't get reglist value of unknown instruction");
+            break;
+        case push:
+        case pop:
+            if (BIT_RANGE(_opcode, 25, 27) == 0b100) {
+                //A1 encoding
+                uint16_t ret = (uint16_t)BIT_RANGE(_opcode, 0, 15);
+                register_list *r = (register_list *)&ret;
+                return *r;
+            }else{
+                reterror("not implemented");
+            }
+
+        default:
+            reterror("failed to get reglist value");
+            break;
+    }
 }
 
 #pragma mark cast operators

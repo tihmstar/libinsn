@@ -695,6 +695,10 @@ struct decoder_stage1_thumb32{
                 case 0b101:
                     return {true, {arm32::bl, arm32::st_general, arm32::sut_branch_imm}};
                 
+                case 0b110:
+                case 0b100:
+                    return {true, {arm32::blx, arm32::st_general, arm32::sut_branch_imm}};
+
                 case 0b001:
                 case 0b011:
                     return {true, {arm32::b, arm32::st_general, arm32::sut_branch_imm}};
@@ -1073,7 +1077,7 @@ int32_t thumb::imm(){
                         return _pc + (4 >> ((_pc>>1) & 1)) + (int32_t)(BIT_RANGE(_opcode,0,7)<<2); //T1 encoding
                     }else if (subtype() == st_immediate) {
                         if (BIT_RANGE(_opcode, 11, 15) == 0b01101) {
-                            return (int32_t)BIT_RANGE(_opcode, 6, 10);
+                            return (int32_t)BIT_RANGE(_opcode, 6, 10) << 2;
                         } else if (BIT_RANGE(_opcode, 12, 15) == 0b1001 /* T2 */) {
                             return (int32_t)BIT_RANGE(_opcode, 0, 7) << 2;
                         }else{
@@ -1126,6 +1130,7 @@ int32_t thumb::imm(){
                         reterror("ldr non-literal not implemented");
                     }
                 case bl:
+                case blx:
                 {
                     uint32_t i_S = (uint32_t)BIT_AT(I1(_opcode), 10);
                     uint32_t i_I1 = !(BIT_AT(I2(_opcode), 13) ^ i_S);
@@ -1136,7 +1141,7 @@ int32_t thumb::imm(){
                         imm = (uint32_t)(BIT_RANGE(I1(_opcode), 0, 9) << 12) | (BIT_RANGE(I2(_opcode), 0, 10) << 1);
                     }else{
                         //T2 encoding
-                        imm = (uint32_t)(BIT_RANGE(I1(_opcode), 0, 9) << 11) | (BIT_RANGE(I2(_opcode), 1, 10) << 1);
+                        imm = ((uint32_t)(BIT_RANGE(I1(_opcode), 0, 9) << 11) | (BIT_RANGE(I2(_opcode), 1, 10) << 1)) << 1;
                     }
                     return _pc + 4 + signExtend32((i_S << 24) | (i_I1 << 23) | (i_I2 << 22) | imm, 25);
                 }
@@ -1260,8 +1265,17 @@ uint8_t thumb::rd(){
                 case add:
                     if (subtype() == st_register) {
                         return BIT_RANGE(_opcode, 0, 2);
+                    }else if (subtype() == st_immediate){
+                        if (BIT_RANGE(_opcode, 9, 15) == 0b0001110){
+                            //T1 encoding
+                            return BIT_RANGE(_opcode, 0, 2);
+                        }else{
+                            retassure(BIT_RANGE(_opcode, 11, 15) == 0b00110, "Bad encoding");
+                            //T2 encoding
+                            return BIT_RANGE(_opcode, 8, 10);
+                        }
                     }else{
-                        reterror("unimplemented");
+                        reterror("unexpected subtype");
                     }
                 case lsl:
                     if (subtype() == st_immediate) {
@@ -1333,10 +1347,22 @@ uint8_t thumb::rn(){
                 case cbnz:
                     return BIT_RANGE(_opcode, 0, 2);
 
+                case str:
                 case ldr:
-                    retassure(BIT_RANGE(_opcode, 11, 15) == 0b01101, "Bad encoding");
+                    if (BIT_RANGE(_opcode, 12, 15) == 0b1001) return 13;
+                    retassure(BIT_RANGE(_opcode, 12, 15) == 0b0110, "Bad encoding");
                     return BIT_RANGE(_opcode, 3, 5);
                     
+                case add:
+                    if (BIT_RANGE(_opcode, 9, 15) == 0b0001110){
+                        //T1 encoding
+                        return BIT_RANGE(_opcode, 3, 5);
+                    }else{
+                        retassure(BIT_RANGE(_opcode, 11, 15) == 0b00110, "Bad encoding");
+                        //T2 encoding
+                        return BIT_RANGE(_opcode, 8, 10);
+                    }
+                
                 default:
                     reterror("failed to get rn value for insn size=2");
                     break;

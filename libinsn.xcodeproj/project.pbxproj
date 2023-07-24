@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		2A76ED862A57082A0074B9E4 /* arm32_arm_encode.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2A76ED852A57082A0074B9E4 /* arm32_arm_encode.cpp */; };
 		8738E81F2693083800C03872 /* arm32_arm_decode.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8738E81D2693083800C03872 /* arm32_arm_decode.cpp */; };
 		8738E8202693083800C03872 /* arm32_thumb_decode.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8738E81E2693083800C03872 /* arm32_thumb_decode.cpp */; };
 		8738E8242693084E00C03872 /* arm64_encode.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8738E8222693084E00C03872 /* arm64_encode.cpp */; };
@@ -42,6 +43,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		2A76ED852A57082A0074B9E4 /* arm32_arm_encode.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = arm32_arm_encode.cpp; sourceTree = "<group>"; };
 		8738E8182693054600C03872 /* insn.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; name = insn.hpp; path = include/libinsn/insn.hpp; sourceTree = SOURCE_ROOT; };
 		8738E81D2693083800C03872 /* arm32_arm_decode.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = arm32_arm_decode.cpp; sourceTree = "<group>"; };
 		8738E81E2693083800C03872 /* arm32_thumb_decode.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = arm32_thumb_decode.cpp; sourceTree = "<group>"; };
@@ -82,6 +84,7 @@
 				8738E9172695BCEA00C03872 /* arm32_thumb_encode.cpp */,
 				8738E8282693088F00C03872 /* arm32_arm.hpp */,
 				8738E81D2693083800C03872 /* arm32_arm_decode.cpp */,
+				2A76ED852A57082A0074B9E4 /* arm32_arm_encode.cpp */,
 			);
 			name = arm32;
 			sourceTree = "<group>";
@@ -200,6 +203,7 @@
 				8738E8202693083800C03872 /* arm32_thumb_decode.cpp in Sources */,
 				8738E8242693084E00C03872 /* arm64_encode.cpp in Sources */,
 				8743B0942421184600E4BAFB /* main.cpp in Sources */,
+				2A76ED862A57082A0074B9E4 /* arm32_arm_encode.cpp in Sources */,
 				8738E8252693084E00C03872 /* arm64_decode.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

@@ -16,18 +16,20 @@ int main(int argc, const char * argv[]) {
 //    uint64_t opcode = 0xD65F0FFF;
 //    arm64::insn test(opcode,0xfffffff0084aa6dc);
     
-    arm32::thumb test(0x9407,0x5ff13eae);
-    
+//    arm32::arm test(0xE92D40F0,0x803b65c0);
+    arm32::thumb test(0x1C18,0x220048c4);
+
 //
-//    auto otest = arm64::insn::new_immediate_b(0xfffffff00828d01c, 0xfffffff00828d010);
-//    printf("0x%08x\n",otest.opcode());
+    auto otest = arm32::thumb::new_T2_immediate_b(0x220002aa, 0x22000110);
+    printf("0x%08x\n",otest.opcode());
 
     auto a = test.type();
-    auto s = test.subtype();
-//    auto rn = test.rn();
+//    auto s = test.subtype();
+    auto rn = test.rn();
+    auto rt = test.rd();
 //    auto rd = test.condition();
 //    auto rm = test.rm();
-    auto rt = test.rt();
+//    auto rt = test.rt();
 //    auto t = test.supertype();
 //    auto c = test.classtype();
     auto i = test.imm();

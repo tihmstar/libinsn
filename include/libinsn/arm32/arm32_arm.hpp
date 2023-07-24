@@ -40,20 +40,32 @@ namespace tihmstar{
                 enum subtype subtype();
                 enum supertype supertype();
         //            enum classtype classtype();
-        //            virtual int32_t imm() override;
-        //            virtual uint8_t rd() override;
-        //            uint8_t rn();
-        //            uint8_t rt();
+                int32_t imm();
+                uint8_t rd();
+                uint8_t rn();
+                uint8_t rt();
         //            uint8_t rt2();
-        //            virtual uint8_t rm() override;
+                uint8_t rm();
         //            enum cond condition();
         //            uint32_t special();
-        //
+                register_list reglist();
+
                 public: //cast operators
                     operator enum type();
                     operator loc_t();
 
                 static constexpr uint8_t size() {return 4;};
+                
+#pragma mark constructor functions
+            public: //constructor functions
+#pragma mark general
+                static arm new_A1_general_bx(loc_t pc, uint8_t rm);
+
+#pragma mark register
+#pragma mark immediate
+                static arm new_A1_immediate_mov(loc_t pc, int16_t imm, uint8_t rd);
+
+#pragma mark literal
             };
         };
     };

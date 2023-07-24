@@ -8,6 +8,7 @@ libinsn_la_LIBADD = $(AM_LDFLAGS)
 libinsn_la_SOURCES = 	arm64_decode.cpp \
 						arm64_encode.cpp \
 						arm32_arm_decode.cpp \
+						arm32_arm_encode.cpp \
 						arm32_thumb_decode.cpp \
 						arm32_thumb_encode.cpp \
 						vmem.cpp

@@ -82,7 +82,7 @@ _segmentsStorage(NULL)
     size_t segmentsStorageSize = 0;
     size_t segmentsCnt = 0;
     for (auto seg : segments) {
-        size_t s = sizeof(pvsegment) + seg.segname.size() + 1;
+        size_t s = sizeof(pvsegment) + seg.segname.size();
         if (s & (sizeof(void*)-1)){
             s &= ~(sizeof(void*)-1);
             s+= sizeof(void*);
@@ -95,7 +95,7 @@ _segmentsStorage(NULL)
     _segments = {(pvsegment**)calloc(segmentsCnt+1,sizeof(pvsegment*)),free};
     segmentsStorageSize = 0;
     for (auto seg : segments) {
-        size_t s = sizeof(pvsegment) + seg.segname.size() + 1;
+        size_t s = sizeof(pvsegment) + seg.segname.size();
         if (s & (sizeof(void*)-1)){
             s &= ~(sizeof(void*)-1);
             s+= sizeof(void*);
@@ -314,6 +314,11 @@ inline void vmem<insn>::initSubmaps(){
 
 template <class insn>
 vmem<insn> vmem<insn>::getIter(typename insn::loc_t pos, int perm) const{
+    if (!perm){
+        auto ret = *this;
+        if (pos) ret = pos;
+        return ret;
+    }
     try {
         auto ret = *_submaps.at(perm);
         if (pos) ret = pos;
@@ -408,6 +413,24 @@ template <class insn>
 size_t vmem<insn>::curSegSize(){
     return curSeg()->size;
 }
+
+template <class insn>
+std::vector<vsegment> vmem<insn>::getSegments() const{
+    std::vector<vsegment> retval;
+    uint32_t segNum = 0;
+    for (pvsegment **s = _segments.get(); *s; s++,segNum++) {
+        pvsegment *seg = *s;
+        retval.push_back({
+            seg->buf,
+            seg->size,
+            seg->vaddr,
+            seg->perms,
+            seg->segname
+        });
+    }
+    return retval;
+}
+
 
 #pragma mark iterator operator
 template <class insn>
