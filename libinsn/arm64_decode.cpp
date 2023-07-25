@@ -254,7 +254,7 @@ constexpr enum insn::type is_pacizb_int(uint32_t i){
 }
 
 constexpr enum insn::type is_pacda(uint32_t i){
-    return (BIT_RANGE(i, 10, 31) == 0b1101101011000001000110 /*pacda*/) ? insn::pacda : insn::unknown;
+    return (BIT_RANGE(i | SET_BITS(1, 13), 10, 31) == 0b1101101011000001001010 /*pacda*/) ? insn::pacda : insn::unknown;
 }
 
 constexpr enum insn::type is_pacdza(uint32_t i){
@@ -508,6 +508,8 @@ struct decoder_stage1{
         for (int i=0; i<2; i++) _stage1_insn[0b01001011 | SET_BITS(i,7)] = {true, insn::sub}; //register
 
         for (int i=0; i<2; i++) _stage1_insn[0b00011000 | SET_BITS(i,6)] = {true, insn::ldr}; //literal
+
+        for (int i=0; i<2; i++) _stage1_insn[0b00001010 | SET_BITS(i,7)] = {true, insn::and_}; //shifted register
 
         for (int i=0; i<4; i++) _stage1_insn[0b00101000 | SET_BITS(i & 1,7) | SET_BITS(i >> 1,0)] = {false, .next_stage_decoder = special_decoders_stp_ldp};
 
