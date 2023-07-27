@@ -13,7 +13,7 @@
 using namespace tihmstar::libinsn;
 
 int main(int argc, const char * argv[]) {    
-    uint64_t opcode = 0xDAC10A30;
+    uint64_t opcode = 0xD5182020;
     arm64::insn test(opcode,0xfffffff0084aa6dc);
     
 //    arm32::arm test(0xE92D40F0,0x803b65c0);
@@ -32,8 +32,9 @@ int main(int argc, const char * argv[]) {
 //    auto rt = test.rt();
 //    auto t = test.supertype();
 //    auto c = test.classtype();
-    auto i = test.imm();
+//    auto i = test.imm();
 //    auto regs = test.reglist();
+    auto special = test.special();
 //
     
 //    auto list = test.reglist();

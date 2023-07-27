@@ -93,7 +93,9 @@ namespace tihmstar{
                     tcr_el1     = 0x4102,
                     tcr_el3     = 0x7102,
                     ttbr0_el1   = 0x4100,
-                    ttbr0_el3   = 0x7100
+                    ttbr0_el3   = 0x7100,
+                    ttbr1_el1   = 0x4101,
+                    ttbr1_el3   = 0x7101,
                 };
                 enum pactype{
                     pac_none = 0,
