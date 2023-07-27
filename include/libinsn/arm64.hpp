@@ -86,6 +86,7 @@ namespace tihmstar{
                     AL = 0b1110
                 };
                 enum systemreg : uint64_t{
+                    currentel   = 0x4212,
                     tpidr_el1   = 0x4684,
                     tpidr_el3   = 0x7684,
                     sctlr_el1   = 0x4080,
