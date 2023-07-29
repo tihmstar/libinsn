@@ -91,6 +91,8 @@ namespace tihmstar{
                     tpidr_el3   = 0x7684,
                     sctlr_el1   = 0x4080,
                     sctlr_el3   = 0x7080,
+                    sp_el0      = 0x4208,
+                    sp_el1      = 0x6208,
                     tcr_el1     = 0x4102,
                     tcr_el3     = 0x7102,
                     ttbr0_el1   = 0x4100,
