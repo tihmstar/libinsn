@@ -36,7 +36,7 @@ CFLAGS+=" -std=c11 -fPIC"
 CXXFLAGS+=" -D EXPECTIONNAME=INSNexception"
 
 # Checks for libraries.
-LIBGENERAL_REQUIRES_STR="libgeneral >= 49"
+LIBGENERAL_REQUIRES_STR="libgeneral >= 75"
 PKG_CHECK_MODULES(libgeneral, $LIBGENERAL_REQUIRES_STR)
 
 AC_SUBST([libgeneral_requires], [$LIBGENERAL_REQUIRES_STR])
