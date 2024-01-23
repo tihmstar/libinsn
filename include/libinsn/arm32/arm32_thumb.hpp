@@ -72,7 +72,8 @@ namespace tihmstar{
 
                 static thumb new_T2_immediate_b(loc_t pc, loc_t dst); //2 byte in size
                 static thumb new_T2_immediate_cmp(loc_t pc, int32_t imm, uint8_t rn); //4 byte
-                static thumb new_T2_immediate_str(loc_t pc, int16_t imm, uint8_t rt);
+                static thumb new_T2_immediate_ldr(loc_t pc, int16_t imm, uint8_t rt); //rn is SP
+                static thumb new_T2_immediate_str(loc_t pc, int16_t imm, uint8_t rt); //rn is SP
 
 #pragma mark literal
                 static thumb new_T1_literal_ldr(loc_t pc, loc_t src, uint8_t rt); //2 byte in size

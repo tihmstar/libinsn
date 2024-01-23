@@ -187,6 +187,17 @@ thumb thumb::new_T2_immediate_cmp(loc_t pc, int32_t imm, uint8_t rn){
     };
 }
 
+thumb thumb::new_T2_immediate_ldr(loc_t pc, int16_t imm, uint8_t rt){
+    retassure((imm & 0b11) == 0, "imm needs to be 4 byte aliged!");
+    imm >>=2;
+    return {
+        static_cast<uint32_t>(SET_BITS(0b10011, 11) |
+                              SET_BITS(rt & 0b111, 8) |
+                              SET_BITS(imm & 0xff, 0))
+        ,pc
+    };
+}
+
 thumb thumb::new_T2_immediate_str(loc_t pc, int16_t imm, uint8_t rt){
     retassure((imm & 0b11) == 0, "imm needs to be 4 byte aliged!");
     imm >>=2;

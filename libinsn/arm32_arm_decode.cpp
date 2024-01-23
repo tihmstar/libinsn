@@ -734,26 +734,26 @@ struct decoder_stage1_arm32{
     
         //Data-processing and miscellaneous instructions on page A5-196.
         {
-            _stage1_cond_insn_cond[0b0000] = {false, .next_stage_decoder = data_processing_and_misc_instructions_decoder_0};
-            _stage1_cond_insn_cond[0b0001] = {false, .next_stage_decoder = data_processing_and_misc_instructions_decoder_1};
+            _stage1_cond_insn_cond[0b0000] = {false, {.next_stage_decoder = data_processing_and_misc_instructions_decoder_0}};
+            _stage1_cond_insn_cond[0b0001] = {false, {.next_stage_decoder = data_processing_and_misc_instructions_decoder_1}};
         }
         
         //Load/store word and unsigned byte on page A5-208
         {
-            _stage1_cond_insn_cond[0b0100] = {false, .next_stage_decoder = load_store_word_unsigned_byte_A0_decoder};
-            _stage1_cond_insn_cond[0b0101] = {false, .next_stage_decoder = load_store_word_unsigned_byte_A0_decoder};
-            _stage1_cond_insn_cond[0b0110] = {false, .next_stage_decoder = load_store_word_unsigned_byte_A1_decoder};
-            _stage1_cond_insn_cond[0b0111] = {false, .next_stage_decoder = media_instructions_decoder};
+            _stage1_cond_insn_cond[0b0100] = {false, {.next_stage_decoder = load_store_word_unsigned_byte_A0_decoder}};
+            _stage1_cond_insn_cond[0b0101] = {false, {.next_stage_decoder = load_store_word_unsigned_byte_A0_decoder}};
+            _stage1_cond_insn_cond[0b0110] = {false, {.next_stage_decoder = load_store_word_unsigned_byte_A1_decoder}};
+            _stage1_cond_insn_cond[0b0111] = {false, {.next_stage_decoder = media_instructions_decoder}};
         }
         
         //Branch, branch with link, and block data transfer on page A5-214
         {
-            for (int i=0; i<0b100; i++) _stage1_cond_insn_cond[0b1000 | SET_BITS(i, 0)] = {false, .next_stage_decoder = b_bl_and_block_data_transfer_decoder};
+            for (int i=0; i<0b100; i++) _stage1_cond_insn_cond[0b1000 | SET_BITS(i, 0)] = {false, {.next_stage_decoder = b_bl_and_block_data_transfer_decoder}};
         }
         
         //Coprocessor instructions, and Supervisor Call on page A5-215.
         {
-            for (int i=0; i<0b100; i++) _stage1_cond_insn_cond[0b1100 | SET_BITS(i, 0)] = {false, .next_stage_decoder = coprocessor_instructions_and_supervisor_call_decoder};
+            for (int i=0; i<0b100; i++) _stage1_cond_insn_cond[0b1100 | SET_BITS(i, 0)] = {false, {.next_stage_decoder = coprocessor_instructions_and_supervisor_call_decoder}};
         }
 
         //_stage1_cond_insn_cond
