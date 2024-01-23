@@ -290,12 +290,12 @@ struct decoder_stage1_thumb16{
 
         //Data processing on page A5-7
         {
-            for (int i=0; i<4; i++) _stage1_insn[(0b010000 << 2) | SET_BITS(i,0)] = {false, .next_stage_decoder = data_processing_decoder16};
+            for (int i=0; i<4; i++) _stage1_insn[(0b010000 << 2) | SET_BITS(i,0)] = {false, {.next_stage_decoder = data_processing_decoder16}};
         }
         
         //Special data instructions and branch and exchange on page A5-8
         {
-            for (int i=0; i<4; i++) _stage1_insn[(0b010001 << 2) | SET_BITS(i,0)] = {false, .next_stage_decoder = special_instructions_decoder16};
+            for (int i=0; i<4; i++) _stage1_insn[(0b010001 << 2) | SET_BITS(i,0)] = {false, {.next_stage_decoder = special_instructions_decoder16}};
         }
         
         //Load from Literal Pool, see LDR (literal) on page A6-90
@@ -339,7 +339,7 @@ struct decoder_stage1_thumb16{
         
         //Miscellaneous 16-bit instructions on page A5-10
         {
-            for (int i=0; i<0b10000; i++) _stage1_insn[(0b101100 << 2) | SET_BITS(i,0)] = {false, .next_stage_decoder = miscellaneous_decoder16};
+            for (int i=0; i<0b10000; i++) _stage1_insn[(0b101100 << 2) | SET_BITS(i,0)] = {false, {.next_stage_decoder = miscellaneous_decoder16}};
 
         }
         
@@ -637,17 +637,17 @@ struct decoder_stage1_thumb32{
 
         //Load byte, memory hints on page A5-24
         {
-            for (int i=0; i<0b100; i++) _stage1_insn[(0b110000001 | SET_BITS(i,3)) - 0b010000000] = {false, .next_stage_decoder = load_byte_memory_hints_decoder32};
+            for (int i=0; i<0b100; i++) _stage1_insn[(0b110000001 | SET_BITS(i,3)) - 0b010000000] = {false, {.next_stage_decoder = load_byte_memory_hints_decoder32}};
         }
 
         //Load halfword, unallocated memory hints on page A5-23
         {
-            for (int i=0; i<0b100; i++) _stage1_insn[(0b110000011 | SET_BITS(i,3)) - 0b010000000] = {false, .next_stage_decoder = load_halfword_unallocated_memory_hints_decoder32};
+            for (int i=0; i<0b100; i++) _stage1_insn[(0b110000011 | SET_BITS(i,3)) - 0b010000000] = {false, {.next_stage_decoder = load_halfword_unallocated_memory_hints_decoder32}};
         }
 
         //Load word on page A5-22
         {
-            for (int i=0; i<0b10; i++) _stage1_insn[(0b110000101 | SET_BITS(i,3)) - 0b010000000] = {false, .next_stage_decoder = load_word_decoder32};
+            for (int i=0; i<0b10; i++) _stage1_insn[(0b110000101 | SET_BITS(i,3)) - 0b010000000] = {false, {.next_stage_decoder = load_word_decoder32}};
         }
 
         //Data processing (register) on page A5-28
@@ -1062,6 +1062,12 @@ int32_t thumb::imm(){
                 {
                     if (BIT_RANGE(_opcode, 13,15) == 0b000) {
                         return (int32_t)BIT_RANGE(_opcode,6,8); //T1 encoding
+                    }else if (BIT_RANGE(_opcode, 11,15) == 0b10101){
+                        //T1 SP plus immediate
+                        return (int32_t)BIT_RANGE(_opcode,0,7)<<2;
+                    }else if (BIT_RANGE(_opcode, 7,15) == 0b101100000){
+                        //T2 SP plus immediate
+                        return (int32_t)BIT_RANGE(_opcode,0,6)<<2;
                     }else{
                         return (int32_t)BIT_RANGE(_opcode,0,7); //T2 encoding
                     }
@@ -1234,6 +1240,10 @@ int32_t thumb::imm(){
                         reterror("unimplemented");
                     }
                     
+                case add:
+                    retassure(subtype() == st_immediate, "bad subtype");
+                    return (BIT_AT(I1(_opcode), 10) << 11) | (BIT_RANGE(I2(_opcode), 12, 14)<<8) | BIT_RANGE(I2(_opcode), 0, 7);
+                    
                 default:
                     reterror("failed to get imm value for insn size=4");
                     break;
@@ -1274,6 +1284,12 @@ uint8_t thumb::rd(){
                             //T2 encoding
                             return BIT_RANGE(_opcode, 8, 10);
                         }
+                    }else if (BIT_RANGE(_opcode, 11,15) == 0b10101){
+                        //T1 SP plus immediate
+                        return BIT_RANGE(_opcode, 8, 10);
+                    }else if (BIT_RANGE(_opcode, 7,15) == 0b101100000){
+                        //T2 SP plus immediate
+                        return 13;
                     }else{
                         reterror("unexpected subtype");
                     }
@@ -1299,11 +1315,7 @@ uint8_t thumb::rd(){
                     break;
 
                 case add:
-                    if (subtype() == st_register) {
-                        return BIT_RANGE(I2(_opcode), 8, 11);
-                    }else{
-                        reterror("unimplemented");
-                    }
+                    return BIT_RANGE(I2(_opcode), 8, 11);
                     break;
                     
                 case mov:
@@ -1357,10 +1369,20 @@ uint8_t thumb::rn(){
                     if (BIT_RANGE(_opcode, 9, 15) == 0b0001110){
                         //T1 encoding
                         return BIT_RANGE(_opcode, 3, 5);
-                    }else{
-                        retassure(BIT_RANGE(_opcode, 11, 15) == 0b00110, "Bad encoding");
-                        //T2 encoding
+                    }else if (BIT_RANGE(_opcode, 11,15) == 0b10101){
+                        //T1 SP plus immediate
+                        return 13;
+                    }else if (BIT_RANGE(_opcode, 7,15) == 0b101100000){
+                        //T2 SP plus immediate
+                        return 13;
+                    }else if (BIT_RANGE(_opcode, 11, 15) == 0b00110){
+                        //T2 encoding immediate
                         return BIT_RANGE(_opcode, 8, 10);
+                    }else if (BIT_RANGE(_opcode, 8, 15) == 0b01000100){
+                        //T2 encoding register
+                        return BIT_RANGE(_opcode, 0, 2);
+                    }else{
+                        reterror("Bad encoding");
                     }
                 
                 default:
@@ -1387,6 +1409,20 @@ uint8_t thumb::rn(){
                         return BIT_RANGE(I1(_opcode), 0, 3);
                     }else{
                         reterror("unimplemented");
+                    }
+                    
+                case add:
+                    if (subtype() == st_register) {
+                        return BIT_RANGE(I1(_opcode), 0, 3);
+                    }else if (subtype() == st_immediate){
+                        if (BIT_RANGE(I1(_opcode) | SET_BITS(0b11, 9), 5,15) == 0b11110111000){
+                            //T3 & T4
+                            return BIT_RANGE(I1(_opcode), 0, 3);
+                        }else{
+                            reterror("invalid encoding");
+                        }
+                    }else{
+                        reterror("TODO");
                     }
 
                 default:

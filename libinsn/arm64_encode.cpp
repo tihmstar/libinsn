@@ -34,9 +34,9 @@ insn insn::new_general_adr(loc_t pc, int64_t imm, uint8_t rd){
     ret._opcode |= SET_BITS(rd & 0b11111, 0);
 
     if (imm > pc) {
-        retassure(imm-pc < (1UL<<20), "immediate difference needs to be smaller than (1<<20)");
+        retassure(imm-pc < (1ULL<<20), "immediate difference needs to be smaller than (1<<20)");
     }else{
-        retassure(pc-imm < (1UL<<20), "immediate difference needs to be smaller than (1<<20)");
+        retassure(pc-imm < (1ULL<<20), "immediate difference needs to be smaller than (1<<20)");
     }
     imm -= pc;
 
@@ -55,9 +55,9 @@ insn insn::new_general_adrp(loc_t pc, int64_t imm, uint8_t rd){
     ret._opcode |= SET_BITS(rd & 0b11111, 0);
 
     if (imm > pc) {
-        retassure(imm-pc < (1UL<<32), "immediate difference needs to be smaller than (1<<32)");
+        retassure(imm-pc < (1ULL<<32), "immediate difference needs to be smaller than (1<<32)");
     }else{
-        retassure(pc-imm < (1UL<<32), "immediate difference needs to be smaller than (1<<32)");
+        retassure(pc-imm < (1ULL<<32), "immediate difference needs to be smaller than (1<<32)");
     }
 
     imm -= pc;

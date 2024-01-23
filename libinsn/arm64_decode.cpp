@@ -511,10 +511,10 @@ struct decoder_stage1{
 
         for (int i=0; i<2; i++) _stage1_insn[0b00001010 | SET_BITS(i,7)] = {true, insn::and_}; //shifted register
 
-        for (int i=0; i<4; i++) _stage1_insn[0b00101000 | SET_BITS(i & 1,7) | SET_BITS(i >> 1,0)] = {false, .next_stage_decoder = special_decoders_stp_ldp};
+        for (int i=0; i<4; i++) _stage1_insn[0b00101000 | SET_BITS(i & 1,7) | SET_BITS(i >> 1,0)] = {.isInsn = false, .next_stage_decoder = special_decoders_stp_ldp};
 
 
-#define defineDecoder(binaryByte) _stage1_insn[binaryByte] = {false, .next_stage_decoder = special_decoders_##binaryByte};
+#define defineDecoder(binaryByte) _stage1_insn[binaryByte] = {.isInsn = false, .next_stage_decoder = special_decoders_##binaryByte};
         
         defineDecoder(0b01111001);//unchecked
         defineDecoder(0b00111001);//unchecked
