@@ -13,11 +13,11 @@
 using namespace tihmstar::libinsn;
 
 int main(int argc, const char * argv[]) {    
-    uint64_t opcode = 0xc044ecde;
-//    arm64::insn test(opcode,0xfffffff0084aa6dc);
+    uint64_t opcode = 0x9B0A2D33;
+    arm64::insn test(opcode,0xfffffff0084aa6dc);
     
 //    arm32::arm test(0xE92D40F0,0x803b65c0);
-    arm32::thumb test(0xE598,0xc044ecde);
+//    arm32::thumb test(0xE598,0xc044ecde);
 
 //
     auto otest = arm32::thumb::new_T2_immediate_b(0x220002aa, 0x22000110);

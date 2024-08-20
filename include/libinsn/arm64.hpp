@@ -129,6 +129,7 @@ namespace tihmstar{
                 classtype classtype();
                 pactype pactype();
                 int64_t imm();
+                uint8_t ra();
                 uint8_t rd();
                 uint8_t rn();
                 uint8_t rt();

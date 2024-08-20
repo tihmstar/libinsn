@@ -801,6 +801,20 @@ int64_t insn::imm(){
     return 0;
 }
 
+uint8_t insn::ra(){
+    switch (type()) {
+        case unknown:
+            reterror("can't get ra of unknown instruction");
+            break;
+        case madd:
+            return BIT_RANGE(_opcode, 10, 14);
+
+        default:
+            reterror("failed to get rd");
+            break;
+    }
+}
+
 uint8_t insn::rd(){
     switch (type()) {
         case unknown:
@@ -826,6 +840,7 @@ uint8_t insn::rd(){
         case xpaci:
         case autda:
         case autdza:
+        case madd:
             return (_opcode % (1<<5));
 
         default:
@@ -866,6 +881,7 @@ uint8_t insn::rn(){
         case blrab:
         case blraaz:
         case blrabz:
+        case madd:
             return BIT_RANGE(_opcode, 5, 9);
 
         default:
@@ -920,6 +936,7 @@ uint8_t insn::rm(){
         case csel:
         case mov:
         case subs:
+        case madd:
             return BIT_RANGE(_opcode, 16, 20);
             
         case br:
