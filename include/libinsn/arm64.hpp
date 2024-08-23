@@ -40,7 +40,7 @@ namespace tihmstar{
                     /* R */
                     ret,
                     /* S */
-                    stp, str, strb, strh, sub, subs,
+                    smaddl, stp, str, strb, strh, sub, subs,
                     /* T */
                     tbnz, tbz,
                     

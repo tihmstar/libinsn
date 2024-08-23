@@ -237,6 +237,10 @@ constexpr enum insn::type is_madd(uint32_t i){
     return ((BIT_RANGE(i, 21, 30) == 0b0011011000) && (BIT_AT(i, 15) == 0)) ? insn::madd : insn::unknown;
 }
 
+constexpr enum insn::type is_smaddl(uint32_t i){
+    return ((BIT_RANGE(i, 21, 30) == 0b0011011001) && (BIT_AT(i, 15) == 0)) ? insn::smaddl : insn::unknown;
+}
+
 constexpr enum insn::type is_autda(uint32_t i){
     return (BIT_RANGE(i, 10, 31) == 0b1101101011000001000110 /*autda*/) ? insn::autda : insn::unknown;
 }
@@ -432,11 +436,13 @@ constexpr const insn_type_test_func special_decoders_0b11111010[] = {
 
 constexpr const insn_type_test_func special_decoders_0b00011011[] = {
     is_madd,
+    is_smaddl,
     NULL
 };
 
 constexpr const insn_type_test_func special_decoders_0b10011011[] = {
     is_madd,
+    is_smaddl,
     NULL
 };
 
@@ -807,6 +813,7 @@ uint8_t insn::ra(){
             reterror("can't get ra of unknown instruction");
             break;
         case madd:
+        case smaddl:
             return BIT_RANGE(_opcode, 10, 14);
 
         default:
@@ -841,6 +848,7 @@ uint8_t insn::rd(){
         case autda:
         case autdza:
         case madd:
+        case smaddl:
             return (_opcode % (1<<5));
 
         default:
@@ -882,6 +890,7 @@ uint8_t insn::rn(){
         case blraaz:
         case blrabz:
         case madd:
+        case smaddl:
             return BIT_RANGE(_opcode, 5, 9);
 
         default:
@@ -937,6 +946,7 @@ uint8_t insn::rm(){
         case mov:
         case subs:
         case madd:
+        case smaddl:
             return BIT_RANGE(_opcode, 16, 20);
             
         case br:
