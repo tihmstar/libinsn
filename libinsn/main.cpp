@@ -13,7 +13,7 @@
 using namespace tihmstar::libinsn;
 
 int main(int argc, const char * argv[]) {    
-    uint64_t opcode = 0x9B2A2D33;
+    uint64_t opcode = 0x9BAB2933;
     arm64::insn test(opcode,0xfffffff0084aa6dc);
     
 //    arm32::arm test(0xE92D40F0,0x803b65c0);

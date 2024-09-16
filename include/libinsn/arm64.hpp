@@ -43,7 +43,9 @@ namespace tihmstar{
                     smaddl, stp, str, strb, strh, sub, subs,
                     /* T */
                     tbnz, tbz,
-                    
+                    /* T */
+                    umaddl,
+
                     /* X */
                     xpacd, xpaci,
                     
