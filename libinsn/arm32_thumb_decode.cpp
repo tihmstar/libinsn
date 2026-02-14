@@ -1241,8 +1241,14 @@ int32_t thumb::imm(){
                     }
                     
                 case add:
+                {
                     retassure(subtype() == st_immediate, "bad subtype");
-                    return (BIT_AT(I1(_opcode), 10) << 11) | (BIT_RANGE(I2(_opcode), 12, 14)<<8) | BIT_RANGE(I2(_opcode), 0, 7);
+                    uint32_t v = (uint32_t)((BIT_AT(I1(_opcode), 10) << 11) | (BIT_RANGE(I2(_opcode), 12, 14)<<8) | BIT_RANGE(I2(_opcode), 0, 7));
+                    if (BIT_RANGE(I1(_opcode), 8, 9) == 0b01){
+                        return ThumbExpandImm_C(v, 0).first;
+                    }
+                    return v;
+                }
                     
                 default:
                     reterror("failed to get imm value for insn size=4");
