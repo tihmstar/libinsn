@@ -1251,6 +1251,9 @@ int32_t thumb::imm(){
                     return v;
                 }
                     
+                case strd:
+                    return (int32_t)(BIT_RANGE(I2(_opcode), 0, 7) << 2);
+                    
                 default:
                     reterror("failed to get imm value for insn size=4");
                     break;
@@ -1610,13 +1613,51 @@ uint8_t thumb::rt(){
                     break;
 
                 case ldr:
-                    if (subtype() == st_literal) {
-                        return BIT_RANGE(I2(_opcode), 12, 15);
-                    }else if (subtype() == st_immediate) {
-                        return BIT_RANGE(I2(_opcode), 12, 15);
-                    }else{
-                        reterror("unimplemented");
-                    }
+                case str:
+                case strd:
+                case ldrd:
+                    return BIT_RANGE(I2(_opcode), 12, 15);
+                    break;
+                    
+                default:
+                    reterror("failed to get rt value for insn size=4");
+                    break;
+            }
+        }
+        break;
+
+        default:
+            reterror("rt: got bad insnsize");
+            break;
+    }
+}
+
+uint8_t thumb::rt2(){
+    switch (insnsize()) {
+        case 2:
+        {
+            switch (type()) {
+                case unknown:
+                    reterror("can't get rt value of unknown instruction");
+                    break;
+
+                default:
+                    reterror("failed to get rt value for insn size=2");
+                    break;
+            }
+        }
+        break;
+
+        case 4:
+        {
+            switch (type()) {
+                case unknown:
+                    reterror("can't get rt value of unknown instruction");
+                    break;
+
+                case strd:
+                case ldrd:
+                    return BIT_RANGE(I2(_opcode), 8, 11);
                     break;
                     
                 default:
