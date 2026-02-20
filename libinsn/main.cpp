@@ -18,7 +18,7 @@ int main(int argc, const char * argv[]) {
     
 //    arm32::arm test(0xE92D40F0,0x803b65c0);
 //    arm32::thumb test(0x0ebf75f0,0x00006e9b);
-    arm32::thumb test(0x42BEF110,0);
+    arm32::thumb test(0x5200F04F,0);
 //    arm32::arm test(0xA000008,0);
 
 //

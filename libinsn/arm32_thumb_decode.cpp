@@ -916,14 +916,15 @@ struct decoder_stage1_thumb32{
                 }
             case arm32::orr:
                 if (BIT_RANGE(I1(i), 0, 3) == 0b1111) {
+                    if (BIT_RANGE(I1(i), 5, 9) == 0b00010) {
+                        //T2 mov.w encoding
+                        return {true, {arm32::mov,arm32::st_immediate}};
+                    }
+                    
                     //(Move register and immediate shifts)
                     switch (BIT_RANGE(I2(i), 4, 5)) {
                         case 0b00:
-                            if (BIT_RANGE(I2(i), 12, 14) | BIT_RANGE(I2(i), 6, 7)) {
-                                return {true, {arm32::lsl,arm32::st_immediate}};
-                            }else{
-                                return {true, {arm32::mov,predec.types.subtype}};
-                            }
+                            return {true, {arm32::lsl,arm32::st_immediate}};
                         case 0b01:
                             return {true, {arm32::lsr,arm32::st_immediate}};
                         case 0b10:
