@@ -1415,12 +1415,11 @@ uint8_t thumb::rn(){
                     return BIT_RANGE(I1(_opcode), 0, 3);
 
                 case ldr:
-                    if (subtype() == st_immediate){
-                        return BIT_RANGE(I1(_opcode), 0, 3);
-                    }else{
-                        reterror("unimplemented");
-                    }
-                    
+                case str:
+                case ldrd:
+                case strd:
+                    return BIT_RANGE(I1(_opcode), 0, 3);
+
                 case add:
                     if (subtype() == st_register) {
                         return BIT_RANGE(I1(_opcode), 0, 3);

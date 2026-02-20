@@ -30,7 +30,7 @@ int main(int argc, const char * argv[]) {
     auto i = test.imm();
     printf("dst=0x%08x\n",i);
 
-//    auto rn = test.rn();
+    auto rn = test.rn();
 //    auto rt = test.rd();
 //    auto rd = test.condition();
 //    auto rm = test.rm();
