@@ -18,7 +18,7 @@ int main(int argc, const char * argv[]) {
     
 //    arm32::arm test(0xE92D40F0,0x803b65c0);
 //    arm32::thumb test(0x0ebf75f0,0x00006e9b);
-    arm32::thumb test(0x10BE9CD,0);
+    arm32::thumb test(0xB014F8CD,0);
 //    arm32::arm test(0xA000008,0);
 
 //
@@ -30,11 +30,11 @@ int main(int argc, const char * argv[]) {
     auto i = test.imm();
     printf("dst=0x%08x\n",i);
 
-    auto rn = test.rn();
+//    auto rn = test.rn();
 //    auto rt = test.rd();
 //    auto rd = test.condition();
 //    auto rm = test.rm();
-    auto rt = test.rt();
+//    auto rt = test.rt();
 //    auto t = test.supertype();
 //    auto c = test.classtype();
 //    auto regs = test.reglist();

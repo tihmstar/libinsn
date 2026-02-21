@@ -1251,6 +1251,9 @@ int32_t thumb::imm(){
                     return v;
                 }
                     
+                case str:
+                    return (int32_t)BIT_RANGE(I2(_opcode), 0, 7); //this wasn't verified
+                    
                 case strd:
                     return (int32_t)(BIT_RANGE(I2(_opcode), 0, 7) << 2);
                     
