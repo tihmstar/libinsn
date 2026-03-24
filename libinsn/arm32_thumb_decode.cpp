@@ -1242,6 +1242,7 @@ int32_t thumb::imm(){
                     }
                     
                 case add:
+                case sub:
                 {
                     retassure(subtype() == st_immediate, "bad subtype");
                     uint32_t v = (uint32_t)((BIT_AT(I1(_opcode), 10) << 11) | (BIT_RANGE(I2(_opcode), 12, 14)<<8) | BIT_RANGE(I2(_opcode), 0, 7));
@@ -1328,6 +1329,7 @@ uint8_t thumb::rd(){
                     break;
 
                 case add:
+                case sub:
                     return BIT_RANGE(I2(_opcode), 8, 11);
                     break;
                     
