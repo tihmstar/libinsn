@@ -1256,7 +1256,11 @@ int32_t thumb::imm(){
                     return (int32_t)BIT_RANGE(I2(_opcode), 0, 7); //this wasn't verified
                     
                 case strd:
-                    return (int32_t)(BIT_RANGE(I2(_opcode), 0, 7) << 2);
+                    if (BIT_AT(I1(_opcode), 7)){
+                        return -(int32_t)(BIT_RANGE(I2(_opcode), 0, 7) << 2);
+                    }else{
+                        return (int32_t)(BIT_RANGE(I2(_opcode), 0, 7) << 2);
+                    }
                     
                 default:
                     reterror("failed to get imm value for insn size=4");

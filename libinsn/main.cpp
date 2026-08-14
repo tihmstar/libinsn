@@ -19,7 +19,8 @@ int main(int argc, const char * argv[]) {
 //    arm32::arm test(0xE92D40F0,0x803b65c0);
 //    arm32::thumb test(0x0ebf75f0,0x00006e9b);
 //    arm32::thumb test(0xF013E8DF,0);
-    arm32::thumb test(0x30F1AB,0);
+//    arm32::thumb test(0x120BE944,0);
+    arm32::thumb test(0x120BE9C4,0);
 
 //
 //    auto otest = arm32::thumb::new_T2_immediate_b(0x220002aa, 0x22000110);
