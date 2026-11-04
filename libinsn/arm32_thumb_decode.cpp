@@ -916,14 +916,15 @@ struct decoder_stage1_thumb32{
                 }
             case arm32::orr:
                 if (BIT_RANGE(I1(i), 0, 3) == 0b1111) {
+                    if (BIT_RANGE(I1(i), 5, 9) == 0b00010) {
+                        //T2 mov.w encoding
+                        return {true, {arm32::mov,arm32::st_immediate}};
+                    }
+                    
                     //(Move register and immediate shifts)
                     switch (BIT_RANGE(I2(i), 4, 5)) {
                         case 0b00:
-                            if (BIT_RANGE(I2(i), 12, 14) | BIT_RANGE(I2(i), 6, 7)) {
-                                return {true, {arm32::lsl,arm32::st_immediate}};
-                            }else{
-                                return {true, {arm32::mov,predec.types.subtype}};
-                            }
+                            return {true, {arm32::lsl,arm32::st_immediate}};
                         case 0b01:
                             return {true, {arm32::lsr,arm32::st_immediate}};
                         case 0b10:
@@ -1241,8 +1242,25 @@ int32_t thumb::imm(){
                     }
                     
                 case add:
+                case sub:
+                {
                     retassure(subtype() == st_immediate, "bad subtype");
-                    return (BIT_AT(I1(_opcode), 10) << 11) | (BIT_RANGE(I2(_opcode), 12, 14)<<8) | BIT_RANGE(I2(_opcode), 0, 7);
+                    uint32_t v = (uint32_t)((BIT_AT(I1(_opcode), 10) << 11) | (BIT_RANGE(I2(_opcode), 12, 14)<<8) | BIT_RANGE(I2(_opcode), 0, 7));
+                    if (BIT_RANGE(I1(_opcode), 8, 9) == 0b01){
+                        return ThumbExpandImm_C(v, 0).first;
+                    }
+                    return v;
+                }
+                    
+                case str:
+                    return (int32_t)BIT_RANGE(I2(_opcode), 0, 7); //this wasn't verified
+                    
+                case strd:
+                    if (BIT_AT(I1(_opcode), 7)){
+                        return -(int32_t)(BIT_RANGE(I2(_opcode), 0, 7) << 2);
+                    }else{
+                        return (int32_t)(BIT_RANGE(I2(_opcode), 0, 7) << 2);
+                    }
                     
                 default:
                     reterror("failed to get imm value for insn size=4");
@@ -1315,6 +1333,7 @@ uint8_t thumb::rd(){
                     break;
 
                 case add:
+                case sub:
                     return BIT_RANGE(I2(_opcode), 8, 11);
                     break;
                     
@@ -1405,12 +1424,11 @@ uint8_t thumb::rn(){
                     return BIT_RANGE(I1(_opcode), 0, 3);
 
                 case ldr:
-                    if (subtype() == st_immediate){
-                        return BIT_RANGE(I1(_opcode), 0, 3);
-                    }else{
-                        reterror("unimplemented");
-                    }
-                    
+                case str:
+                case ldrd:
+                case strd:
+                    return BIT_RANGE(I1(_opcode), 0, 3);
+
                 case add:
                     if (subtype() == st_register) {
                         return BIT_RANGE(I1(_opcode), 0, 3);
@@ -1603,13 +1621,51 @@ uint8_t thumb::rt(){
                     break;
 
                 case ldr:
-                    if (subtype() == st_literal) {
-                        return BIT_RANGE(I2(_opcode), 12, 15);
-                    }else if (subtype() == st_immediate) {
-                        return BIT_RANGE(I2(_opcode), 12, 15);
-                    }else{
-                        reterror("unimplemented");
-                    }
+                case str:
+                case strd:
+                case ldrd:
+                    return BIT_RANGE(I2(_opcode), 12, 15);
+                    break;
+                    
+                default:
+                    reterror("failed to get rt value for insn size=4");
+                    break;
+            }
+        }
+        break;
+
+        default:
+            reterror("rt: got bad insnsize");
+            break;
+    }
+}
+
+uint8_t thumb::rt2(){
+    switch (insnsize()) {
+        case 2:
+        {
+            switch (type()) {
+                case unknown:
+                    reterror("can't get rt value of unknown instruction");
+                    break;
+
+                default:
+                    reterror("failed to get rt value for insn size=2");
+                    break;
+            }
+        }
+        break;
+
+        case 4:
+        {
+            switch (type()) {
+                case unknown:
+                    reterror("can't get rt value of unknown instruction");
+                    break;
+
+                case strd:
+                case ldrd:
+                    return BIT_RANGE(I2(_opcode), 8, 11);
                     break;
                     
                 default:

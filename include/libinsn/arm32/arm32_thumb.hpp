@@ -42,7 +42,7 @@ namespace tihmstar{
                 uint8_t rd();
                 uint8_t rn();
                 uint8_t rt();
-    //            uint8_t rt2();
+                uint8_t rt2();
                 uint8_t rm();
                 enum cond condition();
     //            uint32_t special();

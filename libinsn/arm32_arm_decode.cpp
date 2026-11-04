@@ -21,6 +21,14 @@ static constexpr uint64_t SET_BITS(uint64_t v, int begin) { return ((v)<<(begin)
 #   define SET_BITS(v, begin) (((v)<<(begin)))
 #endif
 
+#pragma mark reference manual helpers
+__attribute__((always_inline)) static uint32_t signExtend32(uint32_t v, int vSize){
+    uint32_t e = (v & 1 << (vSize-1))>>(vSize-1);
+    for (int i=vSize; i<32; i++)
+        v |= e << i;
+    return v;
+}
+
 using namespace tihmstar::libinsn;
 using namespace tihmstar::libinsn::arm32;
 
@@ -305,6 +313,56 @@ constexpr regtypes data_processing_and_misc_instructions_decoder_1(uint32_t i){
             }
             break;
             
+        default:
+            break;
+    }
+    
+    return predec;
+}
+
+constexpr regtypes data_processing_decoder_1(uint32_t i){
+    struct decoder_stage2{
+        regtypes _stage2_insn[(1<<5)]; //5bit
+        constexpr decoder_stage2() : _stage2_insn{}
+        {
+            //A5.2.3 Data-processing (immediate)
+            for (int i=0; i<0b10; i++) _stage2_insn[0b00000 | SET_BITS(i,0)] = {arm32::and_,arm32::st_immediate};
+            for (int i=0; i<0b10; i++) _stage2_insn[0b00010 | SET_BITS(i,0)] = {arm32::eor,arm32::st_immediate};
+            for (int i=0; i<0b10; i++) _stage2_insn[0b00100 | SET_BITS(i,0)] = {arm32::sub,arm32::st_immediate};
+            for (int i=0; i<0b10; i++) _stage2_insn[0b00110 | SET_BITS(i,0)] = {arm32::rsb,arm32::st_immediate};
+            for (int i=0; i<0b10; i++) _stage2_insn[0b01000 | SET_BITS(i,0)] = {arm32::add,arm32::st_immediate};
+            for (int i=0; i<0b10; i++) _stage2_insn[0b01010 | SET_BITS(i,0)] = {arm32::adc,arm32::st_immediate};
+            for (int i=0; i<0b10; i++) _stage2_insn[0b01100 | SET_BITS(i,0)] = {arm32::sbc,arm32::st_immediate};
+            for (int i=0; i<0b10; i++) _stage2_insn[0b01110 | SET_BITS(i,0)] = {arm32::rsc,arm32::st_immediate};
+            _stage2_insn[0b10001] = {arm32::tst,arm32::st_immediate};
+            _stage2_insn[0b10011] = {arm32::teq,arm32::st_immediate};
+            _stage2_insn[0b10101] = {arm32::cmp,arm32::st_immediate};
+            _stage2_insn[0b10111] = {arm32::cmn,arm32::st_immediate};
+            for (int i=0; i<0b10; i++) _stage2_insn[0b11000 | SET_BITS(i,0)] = {arm32::orr,arm32::st_immediate};
+            for (int i=0; i<0b10; i++) _stage2_insn[0b11010 | SET_BITS(i,0)] = {arm32::mov,arm32::st_immediate};
+            for (int i=0; i<0b10; i++) _stage2_insn[0b11100 | SET_BITS(i,0)] = {arm32::bic,arm32::st_immediate};
+            for (int i=0; i<0b10; i++) _stage2_insn[0b11110 | SET_BITS(i,0)] = {arm32::mvn,arm32::st_immediate};
+
+            //A5.2 Data-processing and miscellaneous instructions
+            _stage2_insn[0b10000] = {arm32::mov,arm32::st_immediate};
+            _stage2_insn[0b10100] = {arm32::movt,arm32::st_immediate};
+            for (int i=0; i<0b10; i++) _stage2_insn[0b10010 | SET_BITS(i,2)] = {arm32::msr,arm32::st_immediate};
+        }
+        constexpr regtypes operator[](uint16_t i) const{
+            return _stage2_insn[i];
+        }
+    };
+        
+    constexpr const decoder_stage2 decode_table_stage2;
+        
+    auto predec = decode_table_stage2[BIT_RANGE(i,20,24)];
+    switch (predec.type) {
+        case arm32::sub:
+        case arm32::add:
+            if (BIT_RANGE(i, 16, 19) == 0b1111) {
+                return {arm32::adr, arm32::st_immediate};
+            }
+            break;
         default:
             break;
     }
@@ -738,6 +796,11 @@ struct decoder_stage1_arm32{
             _stage1_cond_insn_cond[0b0001] = {false, {.next_stage_decoder = data_processing_and_misc_instructions_decoder_1}};
         }
         
+        //Data-processing instructions
+        {
+            for (int i=0; i<0b10; i++) _stage1_cond_insn_cond[0b0010 | SET_BITS(i, 0)] = {false, {.next_stage_decoder = data_processing_decoder_1}};
+        }
+        
         //Load/store word and unsigned byte on page A5-208
         {
             _stage1_cond_insn_cond[0b0100] = {false, {.next_stage_decoder = load_store_word_unsigned_byte_A0_decoder}};
@@ -837,7 +900,8 @@ struct decoder_stage1_arm32{
             }
             return predec;
         }else{
-            return _stage1_cond_insn_cond[(BIT_RANGE(i, 25, 27) << 1) | BIT_AT(i, 4)];
+            uint8_t v = (BIT_RANGE(i, 25, 27) << 1) | BIT_AT(i, 4);
+            return _stage1_cond_insn_cond[v];
         }
     }
 };
@@ -886,9 +950,9 @@ enum arm32::supertype arm::supertype(){
 
 int32_t arm::imm(){
     switch (type()) {
-        case unknown:
-            reterror("can't get imm value of unknown instruction");
-            break;
+        case b:
+        case bl:
+            return (signExtend32(BIT_RANGE(_opcode, 0, 23), 23) << 2) + 8 + _pc;
         case ldr:
             if (subtype() == st_literal) {
                 if (BIT_AT(_opcode, 23)) {
@@ -902,14 +966,17 @@ int32_t arm::imm(){
         case mov:
             if (BIT_RANGE(_opcode, 20, 27) == 0b00110000) {
                 //A2 encoding
-                return BIT_RANGE(_opcode, 0, 11) | BIT_RANGE(_opcode, 16, 19)<<11;
+                return BIT_RANGE(_opcode, 0, 11) | BIT_RANGE(_opcode, 16, 19)<<12;
             }else{
                 //A1 encoding
                 return BIT_RANGE(_opcode, 0, 11);
             }
         case movt:
-            return BIT_RANGE(_opcode, 0, 11);
+            return (BIT_RANGE(_opcode, 0, 11) << 16);
 
+        case unknown:
+            reterror("can't get imm value of unknown instruction");
+            break;
         default:
             reterror("failed to get imm value");
             break;

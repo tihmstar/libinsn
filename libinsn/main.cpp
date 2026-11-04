@@ -13,22 +13,27 @@
 using namespace tihmstar::libinsn;
 
 int main(int argc, const char * argv[]) {    
-    uint64_t opcode = 0xc044ecde;
+//    uint64_t opcode = 0x9BAB2933;
 //    arm64::insn test(opcode,0xfffffff0084aa6dc);
     
 //    arm32::arm test(0xE92D40F0,0x803b65c0);
-    arm32::thumb test(0xE598,0xc044ecde);
+//    arm32::thumb test(0x0ebf75f0,0x00006e9b);
+//    arm32::thumb test(0xF013E8DF,0);
+//    arm32::thumb test(0x120BE944,0);
+    arm32::thumb test(0x120BE9C4,0);
 
 //
-    auto otest = arm32::thumb::new_T2_immediate_b(0x220002aa, 0x22000110);
-    printf("0x%08x\n",otest.opcode());
+//    auto otest = arm32::thumb::new_T2_immediate_b(0x220002aa, 0x22000110);
+//    printf("0x%08x\n",otest.opcode());
 
     auto a = test.type();
     auto s = test.subtype();
-//    auto i = test.imm();
-    auto rn = test.rn();
-    auto rt = test.rd();
-//    auto rd = test.condition();
+    auto i = test.imm();
+    printf("dst=0x%08x\n",i);
+
+//    auto rn = test.rn();
+//    auto rt = test.rd();
+    auto rd = test.rd();
 //    auto rm = test.rm();
 //    auto rt = test.rt();
 //    auto t = test.supertype();

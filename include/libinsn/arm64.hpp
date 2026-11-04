@@ -40,10 +40,12 @@ namespace tihmstar{
                     /* R */
                     ret,
                     /* S */
-                    stp, str, strb, strh, sub, subs,
+                    smaddl, stp, str, strb, strh, sub, subs,
                     /* T */
                     tbnz, tbz,
-                    
+                    /* T */
+                    umaddl,
+
                     /* X */
                     xpacd, xpaci,
                     
@@ -129,6 +131,7 @@ namespace tihmstar{
                 classtype classtype();
                 pactype pactype();
                 int64_t imm();
+                uint8_t ra();
                 uint8_t rd();
                 uint8_t rn();
                 uint8_t rt();
