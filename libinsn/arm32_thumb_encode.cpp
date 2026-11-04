@@ -122,6 +122,34 @@ thumb thumb::new_T1_immediate_bl(loc_t pc, loc_t dst){
     };
 }
 
+thumb thumb::new_T1_immediate_cbnz(loc_t pc, loc_t dst, uint8_t rn){
+    int32_t imm = (dst - pc - 4) >> 1;
+    retassure(imm > 0, "only branch forward allowed");
+    
+    return {
+        static_cast<uint32_t>(SET_BITS(0b10111, 11)         |
+                              SET_BITS((imm >> 5) & 1, 9)   |
+                              SET_BITS(1, 8)                |
+                              SET_BITS(imm & 0b11111, 3)    |
+                              SET_BITS(rn & 0b111, 0))
+        ,pc
+    };
+}
+
+thumb thumb::new_T1_immediate_cbz(loc_t pc, loc_t dst, uint8_t rn){
+    int32_t imm = (dst - pc - 4) >> 1;
+    retassure(imm > 0, "only branch forward allowed");
+    
+    return {
+        static_cast<uint32_t>(SET_BITS(0b10110, 11)         |
+                              SET_BITS((imm >> 5) & 1, 9)   |
+                              SET_BITS(1, 8)                |
+                              SET_BITS(imm & 0b11111, 3)    |
+                              SET_BITS(rn & 0b111, 0))
+        ,pc
+    };
+}
+
 thumb thumb::new_T1_immediate_ldr(loc_t pc, uint8_t imm, uint8_t rn, uint8_t rt){
     retassure((imm & 0b11) == 0, "imm needs to be 4 byte aliged!");
     imm >>=2;

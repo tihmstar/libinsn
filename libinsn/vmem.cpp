@@ -20,38 +20,33 @@ static void *memmem(const void *haystack_start, size_t haystack_len, const void 
     const unsigned char *h = NULL;
     const unsigned char *n = NULL;
     size_t x = needle_len;
-    
+
     /* The first occurrence of the empty string is deemed to occur at
-     the beginning of the string.  */
+    the beginning of the string.  */
     if (needle_len == 0) {
         return (void *)haystack_start;
     }
-    
+
     /* Sanity check, otherwise the loop might search through the whole
-     memory.  */
+        memory.  */
     if (haystack_len < needle_len) {
         return NULL;
     }
-    
-    for (; *haystack && haystack_len--; haystack++) {
+
+    for (; haystack_len--; haystack++) {
         x = needle_len;
         n = needle;
         h = haystack;
-        
+
         if (haystack_len < needle_len)
             break;
-        
-        if ((*haystack != *needle) || (*haystack + needle_len != *needle + needle_len))
+
+        if ((haystack[0] != needle[0]) || (haystack[needle_len-1] != needle[needle_len-1]))
             continue;
-        
-        for (; x; h++, n++) {
-            x--;
-            
-            if (*h != *n)
-                break;
-            
-            if (x == 0)
-                return (void *)haystack;
+
+        for (; x--; h++, n++) {
+            if (*h != *n) break;
+            if (x == 0) return (void *)haystack;
         }
     }
     return NULL;
@@ -631,14 +626,18 @@ template <class insn>
 uint32_t vmem<insn>::value() const{
     const pvsegment *seg = curSeg();
     customassure(out_of_range,_offset + sizeof(uint32_t) <= seg->size);
-    return *(uint32_t*)&seg->buf[_offset];
+    uint32_t ret = 0;
+    memcpy(&ret, &seg->buf[_offset], sizeof(ret));
+    return ret;
 }
 
 template <class insn>
 uint64_t vmem<insn>::doublevalue() const{
     const pvsegment *seg = curSeg();
     customassure(out_of_range, _offset + sizeof(uint64_t) <= seg->size);
-    return *(uint64_t*)&seg->buf[_offset];
+    uint64_t ret = 0;
+    memcpy(&ret, &seg->buf[_offset], sizeof(ret));
+    return ret;
 }
 
 template <class insn>
@@ -646,7 +645,9 @@ uint32_t vmem<insn>::value(typename insn::loc_t p) const{
     const pvsegment *seg = segmentForLoc(p);
     uint64_t offset = p - seg->vaddr;
     customassure(out_of_range, offset + sizeof(uint32_t) <= seg->size);
-    return *(uint32_t*)&seg->buf[offset];
+    uint32_t ret = 0;
+    memcpy(&ret, &seg->buf[offset], sizeof(ret));
+    return ret;
 }
 
 template <class insn>
@@ -654,7 +655,9 @@ uint64_t vmem<insn>::doublevalue(typename insn::loc_t p) const{
     const pvsegment *seg = segmentForLoc(p);
     uint64_t offset = p - seg->vaddr;
     customassure(out_of_range, offset + sizeof(uint64_t) <= seg->size);
-    return *(uint64_t*)&seg->buf[offset];
+    uint64_t ret = 0;
+    memcpy(&ret, &seg->buf[offset], sizeof(ret));
+    return ret;
 }
 
 #pragma mark insn operator

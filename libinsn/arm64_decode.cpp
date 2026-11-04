@@ -163,12 +163,19 @@ constexpr enum insn::type is_ldrh(uint32_t i){
         || (BIT_RANGE(i, 22, 31) == 0b0111100101) /*unsigned offset */) ? insn::ldrh : insn::unknown;
 }
 
+constexpr enum insn::type is_strh(uint32_t i){
+    return (((BIT_RANGE(i, 21, 31) == 0b01000001) && (BIT_RANGE(i, 10, 11) == 0b10)) /* register*/
+        || ((BIT_RANGE(i, 21, 31) == 0b01111000000)
+            && ((BIT_RANGE(i, 10, 11) == 0b01) /* imm post-index*/ || (BIT_RANGE(i, 10, 11) == 0b11) /* imm pre-index*/ ))
+        || (BIT_RANGE(i, 22, 31) == 0b0111100100) /*unsigned offset */) ? insn::strh : insn::unknown;
+}
+
 constexpr enum insn::type is_movk(uint32_t i){
     return (BIT_RANGE(i, 23, 30) == 0b11100101) ? insn::movk : insn::unknown;
 }
 
 constexpr enum insn::type is_orr(uint32_t i){
-    return (BIT_RANGE(i, 23, 30) == 0b01100100) ? insn::orr : insn::unknown;
+    return (BIT_RANGE(i, 23, 30) == 0b01100100 && (BIT_AT(i, 31) || !BIT_AT(i, 22))) ? insn::orr : insn::unknown;
 }
 
 constexpr enum insn::type is_ldxr(uint32_t i){
@@ -202,7 +209,7 @@ constexpr enum insn::type is_ldp(uint32_t i){
 }
 
 constexpr enum insn::type is_movz(uint32_t i){
-    return (BIT_RANGE(i, 23, 30) == 0b10100101) ? insn::movz : insn::unknown;
+    return (BIT_RANGE(i, 23, 28) == 0b100101) ? insn::movz : insn::unknown;
 }
 
 constexpr enum insn::type is_bcond(uint32_t i){
@@ -227,6 +234,10 @@ constexpr enum insn::type is_mrs(uint32_t i){
 
 constexpr enum insn::type is_msr(uint32_t i){
     return (BIT_RANGE(i, 20, 31) == 0b110101010001) ? insn::msr : insn::unknown;
+}
+
+constexpr enum insn::type is_bti(uint32_t i){
+    return ((i | SET_BITS(0b11, 6)) == 0xd50324df) ? insn::bti : insn::unknown;
 }
 
 constexpr enum insn::type is_ccmp(uint32_t i){
@@ -297,6 +308,13 @@ constexpr enum insn::type is_lsl(uint32_t i){
     return (BIT_RANGE(i, 23, 30) == 0b10100110) ? insn::lsl : insn::unknown;
 }
 
+constexpr enum insn::type is_bfm(uint32_t i){
+    return (BIT_RANGE(i, 23, 30) == 0b01100110) ? insn::bfm : insn::unknown;
+}
+
+constexpr enum insn::type is_ands(uint32_t i){
+    return (BIT_RANGE(i, 23, 30) == 0b11100100) ? insn::ands : insn::unknown;
+}
 
 #pragma mark decoding unit (special decoders)
 
@@ -323,11 +341,13 @@ constexpr const insn_type_test_func special_decoders_0b11010111[] = {
 
 constexpr const insn_type_test_func special_decoders_0b01111000[] = {
     is_ldrh,
+    is_strh,
     NULL
 };
 
 constexpr const insn_type_test_func special_decoders_0b01111001[] = {
     is_ldrh,
+    is_strh,
     NULL
 };
 
@@ -339,6 +359,7 @@ constexpr const insn_type_test_func special_decoders_0b00111001[] = {
 
 constexpr const insn_type_test_func special_decoders_0b01110010[] = {
     is_movk,
+    is_ands,
     NULL
 };
 
@@ -405,11 +426,13 @@ constexpr const insn_type_test_func special_decoders_0b11010101[] = {
     is_pacibsp,
     is_mrs,
     is_msr,
+    is_bti,
     NULL
 };
 
 constexpr const insn_type_test_func special_decoders_0b00010010[] = {
     is_and,
+    is_movz,
     NULL
 };
 
@@ -483,6 +506,16 @@ constexpr const insn_type_test_func special_decoders_0b01010011[] = {
 
 constexpr const insn_type_test_func special_decoders_0b11010011[] = {
     is_lsl,
+    NULL
+};
+
+constexpr const insn_type_test_func special_decoders_0b00110011[] = {
+    is_bfm,
+    NULL
+};
+
+constexpr const insn_type_test_func special_decoders_0b10110011[] = {
+    is_bfm,
     NULL
 };
 
@@ -561,6 +594,10 @@ struct decoder_stage1{
 
         defineDecoder(0b01010011);
         defineDecoder(0b11010011);
+        
+        defineDecoder(0b00110011);
+        defineDecoder(0b10110011);
+
 
 #undef defineDecoder
     };
@@ -626,8 +663,15 @@ enum insn::subtype insn::subtype(){
             }else{
                 return st_register;
             }
+        case ands:
+            if (BIT_RANGE(_opcode, 24, 28) == 0b01010) {
+                return st_register;
+            }else{
+                return st_immediate;
+            }
+        case strh:
         case ldrh:
-            if (((BIT_RANGE(_opcode, 21, 31) == 0b01000011) && (BIT_RANGE(_opcode, 10, 11) == 0b10))) {
+            if (((BIT_RANGE(_opcode | SET_BITS(1, 22), 21, 31) == 0b01000011) && (BIT_RANGE(_opcode, 10, 11) == 0b10))) {
                 return st_register;
             }else{
                 return st_immediate;
@@ -655,6 +699,16 @@ enum insn::subtype insn::subtype(){
             }else{
                 return st_immediate;
             }
+        case sub:
+            if (BIT_RANGE(_opcode, 21, 30) == 0b1001011001 /* register_extended */) {
+                return st_register_extended;
+            }else if (BIT_AT(_opcode, 21) == 0 && BIT_RANGE(_opcode, 24, 30) == 0b1001011 /* st_register_shifted */) {
+                return st_register_shifted;
+            }else if (BIT_RANGE(_opcode, 24, 30) == 0b1010001 /* immediate */){
+                return st_immediate;
+            }else{
+                reterror("unexpected subtype");
+            }
         case subs:
             if (BIT_RANGE(_opcode, 21, 30) == 0b1101011001 /* register_extended */) {
                 return st_register_extended;
@@ -668,6 +722,14 @@ enum insn::subtype insn::subtype(){
         case ccmp:
             if (BIT_RANGE(_opcode, 21, 30) == 0b1111010010/* register */){
                 return st_register;
+            }else{
+                reterror("unexpected subtype");
+            }
+        case orr:
+            if (BIT_RANGE(_opcode, 23, 30) == 0b01100100) {
+                return st_immediate;
+            }else if (BIT_RANGE(_opcode, 24, 30) == 0b0101010){
+                return st_register_shifted;
             }else{
                 reterror("unexpected subtype");
             }
@@ -728,11 +790,17 @@ enum insn::pactype insn::pactype(){
             if (BIT_AT(_opcode, 11) == 1) {//is authenticated
                 if (BIT_AT(_opcode, 10) == 0) {
                     //is A
-                    return (BIT_AT(_opcode, 24) == 1) ? pac_AAZ : pac_AA;
+                    return (BIT_AT(_opcode, 24) == 1) ? pac_AA : pac_AAZ;
                 }else{
                     //is B
-                    return (BIT_AT(_opcode, 24) == 1) ? pac_ABZ : pac_AB;
+                    return (BIT_AT(_opcode, 24) == 1) ? pac_AB : pac_ABZ;
                 }
+            }
+        case ret:
+            if (BIT_AT(_opcode, 11) == 1){
+                return (BIT_AT(_opcode, 10)) ? pac_AB : pac_AA;
+            }else{
+                return pac_none;
             }
         default:
             return pac_none;
@@ -765,7 +833,11 @@ int64_t insn::imm(){
             return _pc + (signExtend64(BIT_RANGE(_opcode, 5, 18), 13)<<2);
         case movk:
         case movz:
-            return ((uint64_t)BIT_RANGE(_opcode, 5, 20)) << (BIT_RANGE(_opcode, 21, 22) * 16);
+            if (BIT_RANGE(_opcode, 29, 30) == 0b00){
+                return ~((uint64_t)BIT_RANGE(_opcode, 5, 20)) << (BIT_RANGE(_opcode, 21, 22) * 16);
+            } else {
+                return ((uint64_t)BIT_RANGE(_opcode, 5, 20)) << (BIT_RANGE(_opcode, 21, 22) * 16);
+            }
         case ldr:
         case str:
         case ldrh:
@@ -781,8 +853,10 @@ int64_t insn::imm(){
             }else{
                 reterror("needs st_immediate for imm to be defined!");
             }
-        case orr:
         case and_:
+        case ands:
+        case bfm:
+        case orr:
         {
             auto bm = DecodeBitMasks(BIT_AT(_opcode, 22),BIT_RANGE(_opcode, 10, 15),BIT_RANGE(_opcode, 16,21), true);
             int64_t val = bm.first;
@@ -806,6 +880,7 @@ int64_t insn::imm(){
                 return 32-immr;
             }
         }
+            
         default:
             reterror("failed to get imm value");
             break;
@@ -857,6 +932,8 @@ uint8_t insn::rd(){
         case madd:
         case smaddl:
         case umaddl:
+        case bfm:
+        case ands:
             return (_opcode % (1<<5));
 
         default:
@@ -883,6 +960,7 @@ uint8_t insn::rn(){
         case strb:
         case ldr:
         case ldrh:
+        case strh:
         case stp:
         case ldp:
         case csel:
@@ -900,6 +978,8 @@ uint8_t insn::rn(){
         case madd:
         case smaddl:
         case umaddl:
+        case bfm:
+        case ands:
             return BIT_RANGE(_opcode, 5, 9);
 
         default:
@@ -923,6 +1003,7 @@ uint8_t insn::rt(){
         case strb:
         case ldr:
         case ldrh:
+        case strh:
         case stp:
         case ldp:
         case mrs:

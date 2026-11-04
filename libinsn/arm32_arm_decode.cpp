@@ -54,7 +54,7 @@ struct decoder_val{
     bool isInsn;
     union {
         regtypes types;
-        const insn_type_test_func next_stage_decoder;
+        insn_type_test_func next_stage_decoder;
     };
 };
 
@@ -961,7 +961,7 @@ int32_t arm::imm(){
                     return _pc + 8 - BIT_RANGE(_opcode, 0, 11);
                 }
             }else{
-                reterror("todo");
+                return BIT_RANGE(_opcode, 0, 11);
             }
         case mov:
             if (BIT_RANGE(_opcode, 20, 27) == 0b00110000) {
@@ -1004,6 +1004,7 @@ uint8_t arm::rn(){
             reterror("can't get rn value of unknown instruction");
             break;
         case add:
+        case ldr:
             return BIT_RANGE(_opcode, 16, 19);
         default:
             reterror("failed to get rn value");
@@ -1017,10 +1018,13 @@ uint8_t arm::rt(){
             reterror("can't get rt value of unknown instruction");
             break;
         case ldr:
-            if (subtype() == st_literal) {
-                return BIT_RANGE(_opcode, 12, 15);
-            }else{
-                reterror("todo");
+            switch (subtype()) {
+                case st_literal:
+                case st_immediate:
+                    return BIT_RANGE(_opcode, 12, 15);
+                    
+                default:
+                    reterror("todo");
             }
         default:
             reterror("failed to get rt value");
@@ -1038,6 +1042,18 @@ uint8_t arm::rm(){
         default:
             reterror("failed to get rm value");
             break;
+    }
+}
+
+enum cond arm::condition(){
+    switch (type()) {
+        case b:
+        case bcond:
+            retassure(BIT_RANGE(_opcode, 24, 27) == 0b1010,"unexpected branch opcode");
+            return (cond)BIT_RANGE(_opcode, 28, 31);
+            
+        default:
+            reterror("failed to get condition for unhandled insn");
     }
 }
 

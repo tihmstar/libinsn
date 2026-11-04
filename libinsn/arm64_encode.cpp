@@ -11,6 +11,8 @@
 
 #include "../include/libinsn/arm64.hpp"
 
+#include <bit>
+
 #ifdef DEBUG
 #   include <stdint.h>
 __attribute__((unused)) static constexpr uint64_t BIT_RANGE(uint64_t v, int begin, int end) { return ((v)>>(begin)) % (1UL << ((end)-(begin)+1)); }
@@ -24,8 +26,69 @@ __attribute__((unused)) static constexpr uint64_t SET_BITS(uint64_t v, int begin
 
 using namespace tihmstar::libinsn::arm64;
 
-#pragma mark general
+#pragma mark helpers
 
+struct BitMasks{
+    uint32_t Imms;
+    uint32_t Immr;
+    bool N;
+};
+
+__attribute__((always_inline)) static bool isMask(uint64_t Value) {
+  return Value && ((Value + 1) & Value) == 0;
+}
+
+__attribute__((always_inline)) static bool isShiftedMask(uint64_t Value) {
+  return Value && isMask((Value - 1) | Value);
+}
+
+__attribute__((always_inline)) static BitMasks EncodeBitMasks(uint64_t Imm, bool isW){
+    assure(Imm == 0ULL || Imm == ~0ULL || (isW && (Imm >> 32 == 0)));
+    
+    uint32_t Size = isW ? 32 : 64;
+    
+    do {
+        Size >>=1;
+        uint64_t Mask = (1ULL << Size) - 1;
+        
+        if ((Imm & Mask) != ((Imm >> Size) & Mask)) {
+            Size <<=1;
+            break;
+        }
+    } while (Size > 2);
+    
+    uint8_t cntT1 = 0;
+    uint8_t I = 0;
+    uint64_t Mask = ((uint64_t)-1LL) >> (64 - Size);
+    Imm &= Mask;
+    
+    if (isShiftedMask(Imm)) {
+        I = std::countr_zero(Imm);
+        retassure(I < 64, "undefined behavior");
+        cntT1 = std::countr_one(Imm >> I);
+    } else {
+        Imm |= ~Mask;
+        assure(isShiftedMask(~Imm));
+        
+        uint8_t cntL0 = std::countl_one(Imm);
+        I = 64 - cntL0;
+        cntT1 = cntL0 + std::countr_one(Imm) - (64 - Size);
+    }
+    
+    assure(Size > I);
+    uint32_t Immr = (Size - I) & (Size - 1);
+    uint64_t NImms = ~(Size-1) << 1;
+    NImms |= (cntT1-1);
+    uint32_t N = ((NImms >> 6) & 1) ^ 1;
+    
+    return {
+        .Imms = (uint32_t)(NImms & 0b111111),
+        .Immr = (Immr & 0b111111),
+        .N = !!N,
+    };
+}
+
+#pragma mark general
 
 insn insn::new_general_adr(loc_t pc, int64_t imm, uint8_t rd){
     insn ret(0,pc);
@@ -330,12 +393,34 @@ insn insn::new_register_ldr(loc_t pc, uint8_t rm, uint8_t rn, uint8_t rt, bool i
     };
 }
 
+insn insn::new_register_ldrb(loc_t pc, uint8_t rm, uint8_t rn, uint8_t rt){
+    return {
+        static_cast<uint32_t>(SET_BITS(0b00111000011, 21) |
+                              SET_BITS(rm & 0b11111, 16) |
+                              SET_BITS(0b011010, 10) |
+                              SET_BITS(rn & 0b11111, 5) |
+                              SET_BITS(rt & 0b11111, 0))
+        ,pc
+    };
+}
+
 insn insn::new_register_str(loc_t pc, uint8_t rm, uint8_t rn, uint8_t rt, bool isW){
     return {
         static_cast<uint32_t>(SET_BITS(isW ? 0b10 : 0b11, 30) |
                               SET_BITS(0b111000001, 21) |
                               SET_BITS(rm & 0b11111, 16) |
                               SET_BITS(0b00011010, 10) |
+                              SET_BITS(rn & 0b11111, 5) |
+                              SET_BITS(rt & 0b11111, 0))
+        ,pc
+    };
+}
+
+insn insn::new_register_strb(loc_t pc, uint8_t rm, uint8_t rn, uint8_t rt){
+    return {
+        static_cast<uint32_t>(SET_BITS(0b00111000001, 21) |
+                              SET_BITS(rm & 0b11111, 16) |
+                              SET_BITS(0b011010, 10) |
                               SET_BITS(rn & 0b11111, 5) |
                               SET_BITS(rt & 0b11111, 0))
         ,pc
@@ -350,6 +435,20 @@ insn insn::new_immediate_add(loc_t pc, int64_t imm, uint8_t rn, uint8_t rd){
         static_cast<uint32_t>(SET_BITS(0b10010001, 24) |
                               SET_BITS(0b00, 22) |
                               SET_BITS(imm & 0b111111111111, 10) |
+                              SET_BITS(rn & 0b11111, 5) |
+                              SET_BITS(rd & 0b11111, 0))
+        ,pc
+    };
+}
+
+insn insn::new_immediate_ands(loc_t pc, int64_t imm, uint8_t rn, uint8_t rd, bool isW){
+    auto bm = EncodeBitMasks(imm, isW);
+    return {
+        static_cast<uint32_t>(SET_BITS(isW == false, 31) |
+                              SET_BITS(0b11100100, 23) |
+                              SET_BITS(bm.N, 22) |
+                              SET_BITS(bm.Immr, 16) |
+                              SET_BITS(bm.Imms, 10) |
                               SET_BITS(rn & 0b11111, 5) |
                               SET_BITS(rd & 0b11111, 0))
         ,pc
@@ -566,6 +665,16 @@ insn insn::new_immediate_ldr_unsigned(loc_t pc, int64_t imm, uint8_t rn, uint8_t
             ,pc
         };
     }
+}
+
+insn insn::new_immediate_ldrb_unsigned(loc_t pc, int64_t imm, uint8_t rn, uint8_t rt){
+    return {
+        static_cast<uint32_t>(SET_BITS(0b0011100101, 22) |
+                              SET_BITS(imm & 0b111111111111, 10) |
+                              SET_BITS(rn & 0b11111, 5) |
+                              SET_BITS(rt & 0b11111, 0))
+        ,pc
+    };
 }
 
 insn insn::new_immediate_tbz(loc_t pc, int16_t imm, uint8_t b5, uint8_t b40, uint8_t rt, bool isTBNZ){

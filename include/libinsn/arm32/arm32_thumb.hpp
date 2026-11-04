@@ -65,6 +65,8 @@ namespace tihmstar{
 #pragma mark immediate
                 static thumb new_T1_immediate_bcond(loc_t pc, loc_t dst, enum cond condition); //2 byte in size
                 static thumb new_T1_immediate_bl(loc_t pc, loc_t dst); //4 byte in size
+                static thumb new_T1_immediate_cbnz(loc_t pc, loc_t dst, uint8_t rn); //2 byte
+                static thumb new_T1_immediate_cbz(loc_t pc, loc_t dst, uint8_t rn); //2 byte
                 static thumb new_T1_immediate_cmp(loc_t pc, uint8_t imm, uint8_t rn); //2 byte
                 static thumb new_T1_immediate_ldr(loc_t pc, uint8_t imm, uint8_t rn, uint8_t rt);
                 static thumb new_T1_immediate_movs(loc_t pc, int8_t imm, uint8_t rd);

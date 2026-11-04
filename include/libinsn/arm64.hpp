@@ -22,9 +22,9 @@ namespace tihmstar{
                 enum type {
                     unknown = 0,
                     /* A */
-                    add, adr, adrp, and_, autda, autdza,
+                    add, adr, adrp, and_, ands, autda, autdza,
                     /* B */
-                    b, bcond, bl, blr, blraa, blraaz, blrab, blrabz, br,
+                    b, bcond, bfm, bl, blr, blraa, blraaz, blrab, blrabz, br, bti,
                     /* C */
                     cbnz, cbz, ccmp, csel,
                     /* L */
@@ -50,12 +50,15 @@ namespace tihmstar{
                     xpacd, xpaci,
                     
                     /* Alias */
-                    cmp = subs
+                    bfxil = bfm,
+                    cmp = subs,
+                    tst = ands
                 };
                 enum subtype{
                     st_general,
                     st_register,
                     st_register_extended,
+                    st_register_shifted,
                     st_immediate,
                     st_literal
                 };
@@ -165,18 +168,22 @@ namespace tihmstar{
                 static insn new_register_cmp(loc_t pc, uint8_t imm, uint8_t rn, uint8_t rm, uint8_t rd);
                 static insn new_register_ccmp(loc_t pc, cond condition, uint8_t flags, uint8_t rn, uint8_t rm);
                 static insn new_register_ldr(loc_t pc, uint8_t rm, uint8_t rn, uint8_t rt, bool isW = false);
+                static insn new_register_ldrb(loc_t pc, uint8_t rm, uint8_t rn, uint8_t rt);
                 static insn new_register_str(loc_t pc, uint8_t rm, uint8_t rn, uint8_t rt, bool isW = false);
+                static insn new_register_strb(loc_t pc, uint8_t rm, uint8_t rn, uint8_t rt);
                 static insn new_register_mov(loc_t pc, int64_t imm, uint8_t rd, uint8_t rm, uint8_t rn = 0x1f);
                 static insn new_register_msr(loc_t pc, uint8_t rt, systemreg sysreg, bool isMRS = false);
 
 #pragma mark immediate
                 static insn new_immediate_add(loc_t pc, int64_t imm, uint8_t rn, uint8_t rd);
+                static insn new_immediate_ands(loc_t pc, int64_t imm, uint8_t rn, uint8_t rd, bool isW = false);
                 static insn new_immediate_b(loc_t pc, uint64_t imm);
                 static insn new_immediate_bcond(loc_t pc, uint64_t imm, enum cond condition);
                 static insn new_immediate_bl(loc_t pc, int64_t imm);
                 static insn new_immediate_cbz(loc_t pc, loc_t imm, int8_t rt, bool isCBNZ = false);
                 static insn new_immediate_cmp(loc_t pc, uint64_t imm, uint8_t rn);
                 static insn new_immediate_ldr_unsigned(loc_t pc, int64_t imm, uint8_t rn, uint8_t rt, bool isW = false);
+                static insn new_immediate_ldrb_unsigned(loc_t pc, int64_t imm, uint8_t rn, uint8_t rt);
                 static insn new_immediate_movk(loc_t pc, int64_t imm, uint8_t rd, uint8_t lsl, bool isW = false);
                 static insn new_immediate_movz(loc_t pc, int64_t imm, uint8_t rd, uint8_t lsl, bool isW = false);
                 static insn new_immediate_str_unsigned(loc_t pc, int64_t imm, uint8_t rn, uint8_t rt, bool isW = false);

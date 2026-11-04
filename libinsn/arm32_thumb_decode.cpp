@@ -126,7 +126,7 @@ struct decoder_val{
     bool isInsn;
     union {
         regtypes types;
-        const insn_type_test_func next_stage_decoder;
+        insn_type_test_func next_stage_decoder;
     };
 };
 
@@ -506,9 +506,9 @@ struct decoder_stage1_thumb32{
             _stage1_insn[(0b010000100) - 0b010000000] = {true, {arm32::strex,arm32::st_register_extended, arm32::sut_memory}};
             _stage1_insn[(0b010000101) - 0b010000000] = {true, {arm32::ldrex,arm32::st_register_extended, arm32::sut_memory}};
 
-            for (int i=0; i<0b10; i++) _stage1_insn[(0b010000110 | SET_BITS(i, 3)) - 0b010000000] = {true, {arm32::strd,arm32::st_general, arm32::sut_memory}};
+            for (int i=0; i<0b10; i++) _stage1_insn[(0b010000110 | SET_BITS(i, 3)) - 0b010000000] = {true, {arm32::strd,arm32::st_immediate, arm32::sut_memory}};
             for (int i=0; i<0b10; i++)
-                for (int j=0; j<0b10; j++) _stage1_insn[(0b010010100 | SET_BITS(i, 3) | SET_BITS(j, 1)) - 0b010000000] = {true, {arm32::strd,arm32::st_general, arm32::sut_memory}};
+                for (int j=0; j<0b10; j++) _stage1_insn[(0b010010100 | SET_BITS(i, 3) | SET_BITS(j, 1)) - 0b010000000] = {true, {arm32::strd,arm32::st_immediate, arm32::sut_memory}};
 
             for (int i=0; i<0b10; i++) _stage1_insn[(0b010000111 | SET_BITS(i, 3)) - 0b010000000] = {true, {arm32::ldrd,arm32::st_general, arm32::sut_memory}};
             for (int i=0; i<0b10; i++)
@@ -1261,7 +1261,7 @@ int32_t thumb::imm(){
                     }else{
                         return (int32_t)(BIT_RANGE(I2(_opcode), 0, 7) << 2);
                     }
-                    
+
                 default:
                     reterror("failed to get imm value for insn size=4");
                     break;
@@ -1286,7 +1286,7 @@ uint8_t thumb::rd(){
                     break;
                 case mov:
                     if (subtype() == st_register) {
-                        return BIT_RANGE(_opcode, 0, 2);
+                        return BIT_RANGE(_opcode, 0, 2) | (BIT_AT(_opcode, 7) << 3);
                     }else{
                         return BIT_RANGE(_opcode, 8, 10);
                     }
@@ -1546,6 +1546,11 @@ enum cond thumb::condition(){
                     reterror("can't get rt value of unknown instruction");
                     break;
 
+                case b:
+                case bcond:
+                    retassure(BIT_RANGE(_opcode, 12, 15) == 0b1101, "Invalid encoding");
+                    return (enum cond)BIT_RANGE(I1(_opcode), 8, 11);
+
                 default:
                     reterror("failed to get rt value for insn size=2");
                     break;
@@ -1570,7 +1575,7 @@ enum cond thumb::condition(){
                     break;
                     
                 default:
-                    reterror("failed to get rt value for insn size=4");
+                    reterror("failed to get condition value for insn size=4");
                     break;
             }
         }

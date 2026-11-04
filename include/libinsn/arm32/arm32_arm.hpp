@@ -46,7 +46,7 @@ namespace tihmstar{
                 uint8_t rt();
         //            uint8_t rt2();
                 uint8_t rm();
-        //            enum cond condition();
+                enum cond condition();
         //            uint32_t special();
                 register_list reglist();
 
@@ -63,6 +63,8 @@ namespace tihmstar{
 
 #pragma mark register
 #pragma mark immediate
+                static arm new_A1_immediate_b(loc_t pc, loc_t dst);
+                static arm new_A1_immediate_bcond(loc_t pc, loc_t dst, enum cond condition);
                 static arm new_A1_immediate_mov(loc_t pc, int16_t imm, uint8_t rd);
 
 #pragma mark literal

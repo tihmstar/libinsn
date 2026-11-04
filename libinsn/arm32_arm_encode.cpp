@@ -37,6 +37,20 @@ arm arm::new_A1_general_bx(loc_t pc, uint8_t rm){
 }
 
 #pragma mark immediate
+arm arm::new_A1_immediate_b(loc_t pc, loc_t dst){
+    return new_A1_immediate_bcond(pc, dst, cond::AL);
+}
+
+arm arm::new_A1_immediate_bcond(loc_t pc, loc_t dst, enum cond condition){
+    int32_t imm = (dst-(pc+8)) >> 2;
+    retassure((imm >> 24) == 0 || (imm >> 24) == -1, "bad jump dst");
+    return {
+        static_cast<uint32_t>(SET_BITS(condition & 0b1111, 28) |
+                              SET_BITS(0b1010, 24) |
+                              SET_BITS(imm & 0xfff, 0))
+        ,pc
+    };
+}
 
 arm arm::new_A1_immediate_mov(loc_t pc, int16_t imm, uint8_t rd){
     return {
