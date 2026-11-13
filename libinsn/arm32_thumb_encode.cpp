@@ -240,7 +240,7 @@ thumb thumb::new_T2_immediate_str(loc_t pc, int16_t imm, uint8_t rt){
 #pragma mark literal
 
 thumb thumb::new_T1_literal_ldr(loc_t pc, loc_t src, uint8_t rt){
-    uint16_t imm = (src-pc-4);
+    uint16_t imm = (src-(pc&~3)-4);
     retassure((imm & 0b11) == 0, "imm needs to be 4 byte aliged!");
     imm >>=2;
     
