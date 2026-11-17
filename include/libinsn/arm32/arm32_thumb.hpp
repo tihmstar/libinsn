@@ -59,6 +59,8 @@ namespace tihmstar{
                 static thumb new_T1_general_bx(loc_t pc, uint8_t rm);
 
 #pragma mark register
+                static thumb new_T1_register_add(loc_t pc, uint8_t rd, uint8_t rn, uint8_t rm); //2 byte in size
+                static thumb new_T2_register_add(loc_t pc, uint8_t rdn, uint8_t rm); //2 byte in size
                 static thumb new_T2_register_mov(loc_t pc, uint8_t rd, uint8_t rm); //2 byte in size
                 static thumb new_T3_register_mov(loc_t pc, uint8_t rd, uint8_t rm); //4 byte in size
 
@@ -70,6 +72,7 @@ namespace tihmstar{
                 static thumb new_T1_immediate_cmp(loc_t pc, uint8_t imm, uint8_t rn); //2 byte
                 static thumb new_T1_immediate_ldr(loc_t pc, uint8_t imm, uint8_t rn, uint8_t rt);
                 static thumb new_T1_immediate_movs(loc_t pc, int8_t imm, uint8_t rd);
+                static thumb new_T1_immediate_movt(loc_t pc, int16_t imm, uint8_t rd); //4 byte
                 static thumb new_T1_immediate_str(loc_t pc, int8_t imm, uint8_t rn, uint8_t rt);
 
                 static thumb new_T2_immediate_b(loc_t pc, loc_t dst); //2 byte in size
@@ -77,6 +80,9 @@ namespace tihmstar{
                 static thumb new_T2_immediate_ldr(loc_t pc, int16_t imm, uint8_t rt); //rn is SP
                 static thumb new_T2_immediate_str(loc_t pc, int16_t imm, uint8_t rt); //rn is SP
 
+                static thumb new_T3_immediate_movw(loc_t pc, int16_t imm, uint8_t rd); //4 byte
+
+                static thumb new_T4_immediate_b(loc_t pc, loc_t dst); //4 byte in size
 #pragma mark literal
                 static thumb new_T1_literal_ldr(loc_t pc, loc_t src, uint8_t rt); //2 byte in size
 
