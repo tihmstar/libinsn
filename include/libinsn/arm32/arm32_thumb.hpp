@@ -61,7 +61,8 @@ namespace tihmstar{
 #pragma mark register
                 static thumb new_T1_register_add(loc_t pc, uint8_t rd, uint8_t rn, uint8_t rm); //2 byte in size
                 static thumb new_T2_register_add(loc_t pc, uint8_t rdn, uint8_t rm); //2 byte in size
-                static thumb new_T2_register_mov(loc_t pc, uint8_t rd, uint8_t rm); //2 byte in size
+                static thumb new_T1_register_mov(loc_t pc, uint8_t rd, uint8_t rm); //2 byte in size (4 bit regs)
+                static thumb new_T2_register_mov(loc_t pc, uint8_t rd, uint8_t rm); //2 byte in size (3 bit regs)
                 static thumb new_T3_register_mov(loc_t pc, uint8_t rd, uint8_t rm); //4 byte in size
 
 #pragma mark immediate

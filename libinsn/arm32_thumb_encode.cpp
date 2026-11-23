@@ -84,6 +84,16 @@ thumb thumb::new_T2_register_add(loc_t pc, uint8_t rdn, uint8_t rm){
     };
 }
 
+thumb thumb::new_T1_register_mov(loc_t pc, uint8_t rd, uint8_t rm){
+    return {
+        static_cast<uint32_t>(SET_BITS(0b01000110, 8) |
+                              SET_BITS((rd>>3) & 0b1, 7) |
+                              SET_BITS(rm & 0b1111, 3) |
+                              SET_BITS(rd & 0b111, 0))
+        ,pc
+    };
+}
+
 thumb thumb::new_T2_register_mov(loc_t pc, uint8_t rd, uint8_t rm){
     return {
         static_cast<uint32_t>(SET_BITS(0b0000000000, 6) |
